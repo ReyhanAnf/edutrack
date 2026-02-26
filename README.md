@@ -22,7 +22,6 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal Anda:
 2.  **Instal Dependensi**
     ```bash
     composer install
-    npm install
     ```
 
 3.  **Konfigurasi Lingkungan (.env)**
