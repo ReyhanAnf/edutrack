@@ -15,7 +15,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal Anda:
 
 1.  **Clone Repositori**
     ```bash
-    git clone https://github.com/username/edutrack.git
+    git clone https://github.com/reyhananf/edutrack.git
     cd edutrack
     ```
 
@@ -53,7 +53,6 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal Anda:
 
 6.  **Jalankan Server Lokal**
     ```bash
-    npm run build
     php artisan serve
     ```
     Akses aplikasi di `http://localhost:8000`.
