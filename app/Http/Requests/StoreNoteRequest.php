@@ -26,6 +26,7 @@ class StoreNoteRequest extends FormRequest
             'category' => 'required|string|max:50',
             'content' => 'required|string',
             'status' => 'required|in:In Progress,Completed',
+            'is_favorite' => 'nullable|boolean',
             'subject_id' => [
                 'nullable',
                 \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {

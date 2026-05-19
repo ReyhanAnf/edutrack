@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
+use Inertia\Inertia;
+
 class DashboardController extends Controller
 {
     /**
@@ -21,6 +23,10 @@ class DashboardController extends Controller
         $today = Carbon::now()->format('l'); // contoh: Monday
         $todaysSchedule = $user->schedules()->where('day', $today)->orderBy('start_time')->with('subject')->get();
 
-        return view('dashboard', compact('avgGrade', 'pendingAssignments', 'todaysSchedule'));
+        return Inertia::render('Dashboard', [
+            'avgGrade' => (float) $avgGrade,
+            'pendingAssignments' => $pendingAssignments,
+            'todaysSchedule' => $todaysSchedule,
+        ]);
     }
 }

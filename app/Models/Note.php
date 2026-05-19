@@ -25,6 +25,13 @@ class Note extends Model
         'is_favorite',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_favorite' => 'boolean',
+        ];
+    }
+
     /**
      * Get the user that owns the note.
      */

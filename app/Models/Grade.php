@@ -17,6 +17,13 @@ class Grade extends Model
         'score',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'score' => 'decimal:2',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
