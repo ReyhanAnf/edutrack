@@ -1,0 +1,759 @@
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import TextInput from '@/Components/TextInput';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEventHandler, useEffect, useState } from 'react';
+
+interface Subject {
+    id: number;
+    name: string;
+    color_code: string;
+}
+
+interface Question {
+    id: number;
+    title: string;
+    body: string;
+    status: 'open' | 'resolved';
+    answers_count: number;
+    likes_count: number;
+    liked_by_viewer: boolean;
+    user_reaction?: string | null;
+    reactions_summary?: Record<string, number>;
+    image_url?: string | null;
+    created_at: string;
+    user: {
+        id: number;
+        name: string;
+    };
+    subject?: Subject | null;
+}
+
+interface Props extends PageProps {
+    questions: {
+        data: Question[];
+    };
+    subjects: {
+        data: Subject[];
+    };
+    dashboardStats?: {
+        avgGrade: number;
+        pendingAssignments: number;
+        todaysSchedule: Array<{
+            id: number;
+            start_time: string;
+            subject: {
+                name: string;
+            };
+        }>;
+    };
+}
+
+export default function Index({ auth, questions, subjects, dashboardStats }: Props) {
+    const [timelineQuestions, setTimelineQuestions] = useState<Question[]>(questions.data);
+    const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+    const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+    const [activeReactionPicker, setActiveReactionPicker] = useState<number | null>(null);
+
+    const REACTIONS = [
+        { type: 'icon', value: 'lightbulb', label: 'Genius' },
+        { type: 'icon', value: 'school', label: 'Akademis' },
+        { type: 'icon', value: 'menu_book', label: 'Bermanfaat' },
+        { type: 'icon', value: 'emoji_events', label: 'Juara' },
+        { type: 'emoji', value: '👍', label: 'Setuju' },
+        { type: 'emoji', value: '🙌', label: 'Mantap' },
+        { type: 'emoji', value: '😮', label: 'Wow' },
+        { type: 'emoji', value: '🤔', label: 'Berpikir' },
+        { type: 'emoji', value: '🥳', label: 'Hore' },
+        { type: 'emoji', value: '👏', label: 'Tepuk Tangan' },
+    ];
+
+    const { data, setData, post, processing, errors, reset } = useForm<{
+        subject_id: string;
+        title: string;
+        body: string;
+        image: File | null;
+        stay_on_timeline: boolean;
+    }>({
+        subject_id: '',
+        title: '',
+        body: '',
+        image: null,
+        stay_on_timeline: true,
+    });
+    const openQuestions = timelineQuestions.filter((question) => question.status === 'open').length;
+    const resolvedQuestions = timelineQuestions.filter((question) => question.status === 'resolved').length;
+    const totalLikes = timelineQuestions.reduce((total, question) => total + (question.likes_count ?? 0), 0);
+    const totalAnswers = timelineQuestions.reduce((total, question) => total + (question.answers_count ?? 0), 0);
+
+    useEffect(() => {
+        setTimelineQuestions(questions.data);
+    }, [questions.data]);
+
+    useEffect(() => {
+        // @ts-ignore
+        if (window.renderMathInElement) {
+            // @ts-ignore
+            window.renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\(', right: '\\)', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                ],
+                throwOnError: false,
+            });
+        }
+    }, [timelineQuestions]);
+
+    useEffect(() => {
+        const channelName = 'questions.timeline';
+
+        window.Echo.channel(channelName)
+            .listen('.question.created', (event: { question: Question }) => {
+                setTimelineQuestions((currentQuestions) => {
+                    if (currentQuestions.some((question) => question.id === event.question.id)) {
+                        return currentQuestions;
+                    }
+
+                    return [event.question, ...currentQuestions];
+                });
+            })
+            .listen('.answer.submitted', (event: { answer: { question_id: number } }) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((question) =>
+                        question.id === event.answer.question_id
+                            ? { ...question, answers_count: (question.answers_count ?? 0) + 1 }
+                            : question,
+                    ),
+                );
+            })
+            .listen('.question.like.toggled', (event: { question: { id: number; likes_count: number }; user_id: number; liked: boolean }) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((question) =>
+                        question.id === event.question.id
+                            ? {
+                                ...question,
+                                likes_count: event.question.likes_count,
+                                liked_by_viewer: event.user_id === auth.user.id ? event.liked : question.liked_by_viewer,
+                            }
+                            : question,
+                    ),
+                );
+            })
+            .listen('.question.reaction.toggled', (event: { question_id: number; reactions: Record<string, number> }) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((question) =>
+                        question.id === event.question_id
+                            ? { ...question, reactions_summary: event.reactions }
+                            : question
+                    )
+                );
+            })
+            .listen('.question.updated', (event: { question: Question }) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((question) =>
+                        question.id === event.question.id ? { ...question, ...event.question } : question
+                    )
+                );
+            })
+            .listen('.question.resolved', (event: { question: { id: number; status: 'open' | 'resolved' } }) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((question) =>
+                        question.id === event.question.id
+                            ? { ...question, status: event.question.status }
+                            : question,
+                    ),
+                );
+            });
+
+        return () => {
+            window.Echo.leave(channelName);
+        };
+    }, [auth.user.id]);
+
+    const submitQuestion: FormEventHandler = (event) => {
+        event.preventDefault();
+        
+        if (editingQuestion) {
+            // Laravel requires POST with _method: PATCH to handle files in a PATCH request
+            router.post(route('questions.update', editingQuestion.id), {
+                ...data,
+                _method: 'PATCH',
+            }, {
+                onSuccess: () => {
+                    reset();
+                    setEditingQuestion(null);
+                    setIsQuestionModalOpen(false);
+                },
+            });
+        } else {
+            post(route('questions.store'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    reset();
+                    setData('stay_on_timeline', true);
+                    setIsQuestionModalOpen(false);
+                },
+            });
+        }
+    };
+
+    const startEdit = (question: Question) => {
+        setEditingQuestion(question);
+        setData({
+            subject_id: question.subject?.id.toString() || '',
+            title: question.title,
+            body: question.body,
+            image: null,
+            stay_on_timeline: true,
+        });
+        setIsQuestionModalOpen(true);
+    };
+
+    const toggleLike = (questionId: number) => {
+        const question = timelineQuestions.find((item) => item.id === questionId);
+
+        if (!question) {
+            return;
+        }
+
+        setTimelineQuestions((currentQuestions) =>
+            currentQuestions.map((item) =>
+                item.id === questionId
+                    ? {
+                        ...item,
+                        liked_by_viewer: !item.liked_by_viewer,
+                        likes_count: Math.max(0, (item.likes_count ?? 0) + (item.liked_by_viewer ? -1 : 1)),
+                    }
+                    : item,
+            ),
+        );
+
+        window.axios
+            .post(route('questions.likes.toggle', questionId))
+            .then((response) => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((item) =>
+                        item.id === questionId
+                            ? {
+                                ...item,
+                                liked_by_viewer: response.data.liked,
+                                likes_count: response.data.likes_count,
+                            }
+                            : item,
+                    ),
+                );
+            })
+            .catch(() => {
+                setTimelineQuestions((currentQuestions) =>
+                    currentQuestions.map((item) =>
+                        item.id === questionId ? question : item,
+                    ),
+                );
+            });
+    };
+
+    const toggleReaction = (questionId: number, reaction: string) => {
+        const question = timelineQuestions.find(q => q.id === questionId);
+        if (!question) return;
+
+        const isRemoving = question.user_reaction === reaction;
+
+        // Optimistic update
+        setTimelineQuestions(current => current.map(q => {
+            if (q.id === questionId) {
+                const nextSummary = { ...(q.reactions_summary || {}) };
+                if (q.user_reaction) {
+                    nextSummary[q.user_reaction] = Math.max(0, (nextSummary[q.user_reaction] || 0) - 1);
+                    if (nextSummary[q.user_reaction] === 0) delete nextSummary[q.user_reaction];
+                }
+                if (!isRemoving) {
+                    nextSummary[reaction] = (nextSummary[reaction] || 0) + 1;
+                }
+                return {
+                    ...q,
+                    user_reaction: isRemoving ? null : reaction,
+                    reactions_summary: nextSummary
+                };
+            }
+            return q;
+        }));
+
+        window.axios.post(route('questions.reactions.toggle', questionId), { reaction })
+            .finally(() => setActiveReactionPicker(null));
+    };
+
+    return (
+        <AuthenticatedLayout header="Timeline Belajar">
+            <Head title="Timeline Belajar" />
+
+            <div className="mx-auto max-w-6xl space-y-6">
+                {dashboardStats && (
+                    <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div className="border-b border-gray-100 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-6 dark:border-gray-700 dark:from-gray-800 dark:via-gray-800 dark:to-sky-950/30">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <p className="text-sm font-semibold uppercase tracking-wide text-primary">Dashboard Belajar</p>
+                                    <h2 className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat datang, {auth.user.name}</h2>
+                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 dark:text-gray-400">
+                                        Pantau aktivitas akademik, lihat diskusi terbaru, dan bantu teman menyelesaikan soal dari satu tempat.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsQuestionModalOpen(true)}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
+                                >
+                                    <span className="material-symbols-outlined text-base">edit_square</span>
+                                    Ajukan Pertanyaan
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-px bg-gray-100 dark:bg-gray-700 md:grid-cols-4">
+                            <div className="bg-white p-5 dark:bg-gray-800">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Rata-rata Nilai</p>
+                                    <span className="material-symbols-outlined text-lg text-purple-500">grade</span>
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{dashboardStats.avgGrade.toFixed(2)}</p>
+                            </div>
+                            <div className="bg-white p-5 dark:bg-gray-800">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Tugas Pending</p>
+                                    <span className="material-symbols-outlined text-lg text-orange-500">assignment_late</span>
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
+                            </div>
+                            <div className="bg-white p-5 dark:bg-gray-800">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Diskusi Aktif</p>
+                                    <span className="material-symbols-outlined text-lg text-sky-500">forum</span>
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{openQuestions}</p>
+                            </div>
+                            <div className="bg-white p-5 dark:bg-gray-800">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Jawaban Komunitas</p>
+                                    <span className="material-symbols-outlined text-lg text-green-500">school</span>
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAnswers}</p>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+                    <main className="space-y-4">
+                        <section className="rounded-md border border-gray-100 bg-white p-4 shadow-none dark:border-gray-700 dark:bg-gray-800">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsQuestionModalOpen(true)}
+                                    className="flex min-h-10 flex-1 items-center rounded-xl border border-gray-200 bg-gray-50 px-4 text-left text-sm text-gray-500 transition-colors hover:border-sky-200 hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-sky-900 dark:hover:bg-sky-900/20"
+                                >
+                                    Lagi stuck di soal apa hari ini?
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsQuestionModalOpen(true)}
+                                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
+                                >
+                                    <span className="material-symbols-outlined text-base">edit</span>
+                                    Post
+                                </button>
+                            </div>
+                        </section>
+
+                        <div className="space-y-2">
+                            {timelineQuestions.map((question) => (
+                                <article
+                                    key={question.id}
+                                    className="group overflow-hidden rounded-2xl border border-gray-200/80 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-sky-800"
+                                >
+                                    <Link href={route('questions.show', question.id)} className="block p-6">
+                                        <div className="flex gap-4">
+                                            <div className="min-w-0 flex-1">
+                                                {/* Meta */}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                                                        <span className="font-semibold text-gray-900 dark:text-gray-100">
+                                                            {question.user.name}
+                                                        </span>
+
+                                                        <span className="text-gray-400 dark:text-gray-500">
+                                                            mengajukan pertanyaan
+                                                        </span>
+
+                                                        <span className="text-gray-300 dark:text-gray-600">•</span>
+
+                                                        <span className="text-gray-400 dark:text-gray-500">
+                                                            {new Date(question.created_at).toLocaleDateString('id-ID')}
+                                                        </span>
+                                                    </div>
+
+                                                    {auth.user.id === question.user.id && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                startEdit(question);
+                                                            }}
+                                                            className="flex items-center gap-1 rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-sky-100 transition-colors dark:bg-sky-900/20 dark:hover:bg-sky-900/40"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[14px]">edit</span>
+                                                            Edit
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Badge */}
+                                                <div className="mt-3 flex flex-wrap items-center gap-1">
+                                                    {question.subject && (
+                                                        <span
+                                                            className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-1 text-[10px] font-semibold tracking-wide dark:border-gray-700 dark:bg-gray-900"
+                                                            style={{ color: question.subject.color_code }}
+                                                        >
+                                                            <span
+                                                                className="mr-2 h-1 w-1 rounded-full"
+                                                                style={{ backgroundColor: question.subject.color_code }}
+                                                            />
+
+                                                            {question.subject.name}
+                                                        </span>
+                                                    )}
+
+                                                    <span
+                                                        className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide ${question.status === 'resolved'
+                                                                ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                                                                : 'bg-sky-50 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'
+                                                            }`}
+                                                    >
+                                                        {question.status === 'resolved'
+                                                            ? 'Terjawab'
+                                                            : 'Butuh Bantuan'}
+                                                    </span>
+                                                </div>
+
+                                                {/* Title */}
+                                                <h2 className="mt-5 line-clamp-2 text-[1rem] font-bold leading-snug tracking-tight text-gray-900 transition-colors group-hover:text-primary dark:text-white">
+                                                    {question.title}
+                                                </h2>
+
+                                                {/* Body */}
+                                                <p className="mt-3 line-clamp-3 whitespace-pre-line text-[12px] leading-7 text-gray-600 dark:text-gray-400">
+                                                    {question.body}
+                                                </p>
+
+                                                {/* Image */}
+                                                {question.image_url && (
+                                                    <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+                                                        <img 
+                                                            src={question.image_url} 
+                                                            alt={question.title}
+                                                            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {/* Reactions Summary */}
+                                                {question.reactions_summary && Object.keys(question.reactions_summary).length > 0 && (
+                                                    <div className="mt-4 flex flex-wrap gap-1.5">
+                                                        {Object.entries(question.reactions_summary).map(([reaction, count]) => {
+                                                            const reactionData = REACTIONS.find(r => r.value === reaction);
+                                                            return (
+                                                                <div 
+                                                                    key={reaction}
+                                                                    className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                                                                        question.user_reaction === reaction
+                                                                            ? 'border-sky-200 bg-sky-50 text-primary dark:border-sky-800 dark:bg-sky-900/20'
+                                                                            : 'border-gray-100 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                                                    }`}
+                                                                >
+                                                                    {reactionData?.type === 'icon' ? (
+                                                                        <span className="material-symbols-outlined text-[12px] fill-current">{reaction}</span>
+                                                                    ) : (
+                                                                        <span>{reaction}</span>
+                                                                    )}
+                                                                    <span>{count}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+
+                                    {/* Footer */}
+                                    <div className="grid grid-cols-4 border-t border-gray-100 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-900/20">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleLike(question.id)}
+                                            className={`flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.liked_by_viewer
+                                                    ? 'text-primary'
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                                }`}
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                {question.liked_by_viewer ? 'shift_lock' : 'shift'}
+                                            </span>
+
+                                            <span className="text-xs">{question.likes_count ?? 0}</span>
+                                        </button>
+
+                                        <div className="relative border-l border-gray-100 dark:border-gray-700">
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveReactionPicker(activeReactionPicker === question.id ? null : question.id)}
+                                                className={`flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.user_reaction 
+                                                        ? 'text-primary' 
+                                                        : 'text-gray-500 dark:text-gray-400'
+                                                    }`}
+                                            >
+                                                {question.user_reaction ? (
+                                                    REACTIONS.find(r => r.value === question.user_reaction)?.type === 'icon' ? (
+                                                        <span className="material-symbols-outlined text-[18px] fill-current">{question.user_reaction}</span>
+                                                    ) : (
+                                                        <span className="text-[16px]">{question.user_reaction}</span>
+                                                    )
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-[18px]">add_reaction</span>
+                                                )}
+                                                <span className="hidden sm:inline text-xs">{question.user_reaction ? 'Bereaksi' : 'Reaksi'}</span>
+                                            </button>
+
+                                            {activeReactionPicker === question.id && (
+                                                <div className="absolute bottom-full left-0 mb-2 z-10 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-800 animate-in fade-in slide-in-from-bottom-2">
+                                                    <div className="grid grid-cols-5 gap-1">
+                                                        {REACTIONS.map((reaction) => (
+                                                            <button
+                                                                key={reaction.value}
+                                                                onClick={() => toggleReaction(question.id, reaction.value)}
+                                                                title={reaction.label}
+                                                                className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all hover:scale-110 ${
+                                                                    question.user_reaction === reaction.value 
+                                                                        ? 'bg-sky-100 text-primary dark:bg-sky-900/40' 
+                                                                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                                }`}
+                                                            >
+                                                                {reaction.type === 'icon' ? (
+                                                                    <span className={`material-symbols-outlined text-[20px] ${question.user_reaction === reaction.value ? 'fill-current' : ''}`}>
+                                                                        {reaction.value}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-[20px]">{reaction.value}</span>
+                                                                )}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <Link
+                                            href={route('questions.show', question.id)}
+                                            className="flex items-center justify-center gap-2 border-x border-gray-100 px-4 py-3 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                forum
+                                            </span>
+
+                                            <span className="text-xs">{question.answers_count ?? 0}</span>
+                                        </Link>
+
+                                        <Link
+                                            href={route('questions.show', question.id)}
+                                            className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                send
+                                            </span>
+
+                                            <span className="hidden sm:inline text-xs">Jawab</span>
+                                        </Link>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {timelineQuestions.length === 0 && (
+                            <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <span className="material-symbols-outlined mb-3 text-5xl text-gray-300 dark:text-gray-600">forum</span>
+                                <p className="font-medium text-gray-500 dark:text-gray-400">Timeline masih kosong.</p>
+                                <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">Mulai diskusi pertama dari tombol Post.</p>
+                            </div>
+                        )}
+                    </main>
+
+                    <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+                        {dashboardStats && (
+                            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <h2 className="font-bold text-gray-900 dark:text-gray-100">Dashboard Saya</h2>
+                                <div className="mt-4 space-y-3">
+                                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+                                        <div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Rata-rata Nilai</p>
+                                            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{dashboardStats.avgGrade.toFixed(2)}</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-purple-500">grade</span>
+                                    </div>
+                                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+                                        <div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Tugas Pending</p>
+                                            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-orange-500">assignment_late</span>
+                                    </div>
+                                    <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Jadwal Hari Ini</p>
+                                            <span className="material-symbols-outlined text-base text-blue-500">calendar_today</span>
+                                        </div>
+                                        {dashboardStats.todaysSchedule.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {dashboardStats.todaysSchedule.slice(0, 3).map((schedule) => (
+                                                    <div key={schedule.id} className="flex items-center gap-2 text-xs">
+                                                        <span className="font-semibold text-gray-900 dark:text-gray-100">{schedule.start_time.substring(0, 5)}</span>
+                                                        <span className="truncate text-gray-500 dark:text-gray-400">{schedule.subject.name}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-gray-400">Tidak ada kelas hari ini</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+                    </aside>
+                </div>
+            </div>
+
+            <Modal show={isQuestionModalOpen} maxWidth="2xl" onClose={() => setIsQuestionModalOpen(false)}>
+                <div className="bg-white p-6 dark:bg-gray-800">
+                    <div className="mb-6 flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Buat Pertanyaan</h2>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Bagikan soal dan konteksnya ke timeline belajar.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsQuestionModalOpen(false)}
+                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-900 dark:hover:text-gray-200"
+                            aria-label="Tutup modal"
+                        >
+                            <span className="material-symbols-outlined text-xl">close</span>
+                        </button>
+                    </div>
+
+                    <form onSubmit={submitQuestion} className="space-y-5">
+                        <div>
+                            <InputLabel htmlFor="timeline_subject_id" value="Mata Pelajaran (Opsional)" />
+                            <select
+                                id="timeline_subject_id"
+                                name="subject_id"
+                                value={data.subject_id}
+                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                onChange={(event) => setData('subject_id', event.target.value)}
+                            >
+                                <option value="">Tanpa Mata Pelajaran</option>
+                                {subjects.data.map((subject) => (
+                                    <option key={subject.id} value={subject.id}>
+                                        {subject.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors.subject_id} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="timeline_title" value="Judul Pertanyaan" />
+                            <TextInput
+                                id="timeline_title"
+                                type="text"
+                                name="title"
+                                value={data.title}
+                                className="mt-1 block w-full"
+                                onChange={(event) => setData('title', event.target.value)}
+                                placeholder="Contoh: Kenapa grafik fungsi kuadrat terbuka ke atas?"
+                                required
+                            />
+                            <InputError message={errors.title} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="timeline_body" value="Detail Pertanyaan" />
+                            <textarea
+                                id="timeline_body"
+                                name="body"
+                                value={data.body}
+                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                rows={7}
+                                onChange={(event) => setData('body', event.target.value)}
+                                placeholder="Tuliskan soal, bagian yang membingungkan, dan apa yang sudah dicoba."
+                                required
+                            />
+                            <InputError message={errors.body} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="timeline_image" value="Gambar Soal (Opsional)" />
+                            <div className="mt-1 flex items-center gap-4">
+                                <label className="flex h-32 flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-colors hover:border-primary hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary/50">
+                                    <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                                        <span className="material-symbols-outlined mb-2 text-gray-400">image</span>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {data.image ? data.image.name : 'Upload gambar soal (JPG, PNG)'}
+                                        </p>
+                                    </div>
+                                    <input
+                                        id="timeline_image"
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(event) => setData('image', event.target.files?.[0] || null)}
+                                    />
+                                </label>
+                                {data.image && (
+                                    <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <img
+                                            src={URL.createObjectURL(data.image)}
+                                            alt="Preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setData('image', null)}
+                                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white shadow-sm hover:bg-red-600"
+                                        >
+                                            <span className="material-symbols-outlined text-xs">close</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <InputError message={errors.image} className="mt-2" />
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsQuestionModalOpen(false)}
+                                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100"
+                            >
+                                Batal
+                            </button>
+                            <PrimaryButton disabled={processing}>Post Pertanyaan</PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+        </AuthenticatedLayout>
+    );
+}

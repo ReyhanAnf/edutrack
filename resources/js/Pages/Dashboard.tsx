@@ -23,10 +23,10 @@ export default function Dashboard({ avgGrade, pendingAssignments, todaysSchedule
             <Head title="Dashboard" />
 
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-sky-500 to-purple-600 rounded-2xl p-8 text-white mb-8 shadow-lg relative overflow-hidden">
+            <div className="bg-gradient-to-r from-sky-500 to-purple-600 rounded-2xl p-5 md:p-8 text-white mb-6 md:mb-8 shadow-lg relative overflow-hidden">
                 <div className="relative z-10">
-                    <h2 className="text-3xl font-bold mb-2">Selamat datang kembali, {auth.user.name}!</h2>
-                    <p className="text-sky-100 text-lg max-w-xl">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2">Selamat datang kembali, {auth.user.name}!</h2>
+                    <p className="text-sky-100 text-base md:text-lg max-w-xl">
                         Hanya mereka yang terus melangkah maju yang akan mencapai garis finish. Teruslah belajar dan berkembang!
                     </p>
                     <Link
@@ -42,9 +42,9 @@ export default function Dashboard({ avgGrade, pendingAssignments, todaysSchedule
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
                 {/* Avg Grade */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Rata-rata Nilai</p>
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{avgGrade.toFixed(2)}</h3>
@@ -55,7 +55,7 @@ export default function Dashboard({ avgGrade, pendingAssignments, todaysSchedule
                 </div>
 
                 {/* Pending Assignments */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tugas Belum Selesai</p>
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{pendingAssignments}</h3>
@@ -66,7 +66,7 @@ export default function Dashboard({ avgGrade, pendingAssignments, todaysSchedule
                 </div>
 
                 {/* Today's Schedule */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal Hari Ini</p>
                         <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">calendar_today</span>
@@ -92,9 +92,9 @@ export default function Dashboard({ avgGrade, pendingAssignments, todaysSchedule
             </div>
 
             {/* AI Widget Area */}
-            <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Asisten Belajar AI</h3>
-                <div id="ai-widget" className="mt-8 p-10 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border-2 border-dashed border-gray-200 dark:border-gray-700 h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
+            <div className="mb-6 md:mb-8">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 md:mb-4">Asisten Belajar AI</h3>
+                <div id="ai-widget" className="mt-4 md:mt-8 p-6 md:p-10 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border-2 border-dashed border-gray-200 dark:border-gray-700 h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
                     <div className="text-center">
                         <span className="material-symbols-outlined text-5xl mb-3 text-sky-300 dark:text-sky-900">smart_toy</span>
                         <p className="text-lg">Memuat Widget AI...</p>

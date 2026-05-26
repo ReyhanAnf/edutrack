@@ -24,7 +24,7 @@ export default function Authenticated({
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
     const navItems = [
-        { label: 'Dashboard', href: route('dashboard'), icon: 'dashboard', active: route().current('dashboard') },
+        { label: 'Timeline Belajar', href: route('dashboard'), icon: 'dynamic_feed', active: route().current('dashboard') },
         { 
             group: 'Akademik',
             items: [
@@ -35,6 +35,8 @@ export default function Authenticated({
         { 
             group: 'Pusat Belajar',
             items: [
+                { label: 'Forum Tanya Jawab', href: route('questions.index'), icon: 'forum', active: route().current('questions.*') },
+                { label: 'Leaderboard', href: route('leaderboard.index'), icon: 'social_leaderboard', active: route().current('leaderboard.*') },
                 { label: 'Catatan Saya', href: route('notes.index'), icon: 'edit_note', active: route().current('notes.*') },
                 { label: 'Tugas', href: route('assignments.index'), icon: 'assignment', active: route().current('assignments.*') },
             ]
@@ -167,7 +169,7 @@ export default function Authenticated({
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 p-4 md:p-8">
+                <div className="flex-1 p-3 sm:p-4 md:p-8">
                     {children}
                 </div>
             </main>

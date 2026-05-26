@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\QuestionResource;
+use App\Http\Resources\SubjectResource;
+use App\Models\Question;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -22,11 +25,22 @@ class DashboardController extends Controller
 
         $today = Carbon::now()->format('l'); // contoh: Monday
         $todaysSchedule = $user->schedules()->where('day', $today)->orderBy('start_time')->with('subject')->get();
+        $questions = Question::query()
+            ->with(['user', 'subject'])
+            ->withCount(['answers', 'likes'])
+            ->withExists(['likes as liked_by_viewer' => fn ($query) => $query->where('user_id', Auth::id())])
+            ->latest('last_activity_at')
+            ->latest()
+            ->get();
 
-        return Inertia::render('Dashboard', [
-            'avgGrade' => (float) $avgGrade,
-            'pendingAssignments' => $pendingAssignments,
-            'todaysSchedule' => $todaysSchedule,
+        return Inertia::render('Question/Index', [
+            'questions' => QuestionResource::collection($questions),
+            'subjects' => SubjectResource::collection($user->subjects()->orderBy('name')->get()),
+            'dashboardStats' => [
+                'avgGrade' => (float) $avgGrade,
+                'pendingAssignments' => $pendingAssignments,
+                'todaysSchedule' => $todaysSchedule,
+            ],
         ]);
     }
 }

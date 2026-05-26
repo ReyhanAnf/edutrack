@@ -1,34 +1,127 @@
-# FITUR UTAMA (CORE FEATURES): GAMIFIED SOCIAL-LEARNING NETWORK
+FITUR UTAMA (CORE FEATURES): GAMIFIED SOCIAL-LEARNING NETWORK (BRAINLY + AI)
 
-Platform ini meninggalkan pendekatan LMS tradisional dengan membangun ekosistem berbasis tiga pilar utama: **Personalisasi AI, Gamifikasi Bertingkat (Tier-System), dan Interaksi Real-time.**
+Platform ini mengusung konsep "Crowdsourced Knowledge meets Generative AI"—menggabungkan kekuatan komunitas ala Brainly dengan AI sebagai fasilitator, tutor, dan kurator. Ekosistem ini dibangun di atas tiga pilar utama: Personalisasi AI, Gamifikasi Bertingkat (Tier-System), dan Interaksi Real-time.
 
-Berikut adalah penjabaran fungsionalitas utama platform:
+Berikut adalah penjabaran fungsionalitas utama platform beserta pemetaan arsitektur sistemnya:
 
-### 1\. Dynamic AI Learning Path (Perencanaan Belajar Adaptif)
+1. AI-Powered Q&A & Adaptive Learning Path (Tanya-Jawab & Perencanaan)
 
-*   **Onboarding & Continuous Planning:** Saat pertama kali mendaftar, siswa akan dibantu AI untuk menyusun _Learning Plan_ berdasarkan minat dan target mereka. Rencana ini tidak statis; siswa dapat mengubah atau menambah _planning_ belajar kapan saja seiring berjalannya waktu.
-*   **Multi-Modal Input:** Siswa dapat mengunggah materi, catatan, atau referensi tidak hanya dalam bentuk teks, tetapi juga **suara (audio) dan gambar**. Untuk menghindari ketergantungan pada layanan API AI pihak ketiga (seperti OpenAI/Gemini) dalam mengekstrak gambar (OCR) dan mentranskripsi suara (Speech-to-Text) yang memakan biaya besar dan _bandwidth_ tinggi, sistem akan memproses _raw data_ (data mentah) secara mandiri menggunakan teknologi gratis/lokal.
+Tidak hanya sekadar bertanya, AI bertindak sebagai pendamping yang membimbing, bukan sekadar memberi jawaban instan.
 
-### 2\. Intelligent Social Timeline & AI Persona
+Smart Question Analyzer & Step-by-Step AI Tutor: Saat siswa bertanya atau mengunggah soal ujian, AI tidak langsung memberikan jawaban akhir. AI akan memecah soal tersebut menjadi langkah-langkah penyelesaian (hints) untuk memancing siswa berpikir, atau merekomendasikan materi dasar yang harus dipelajari terlebih dahulu.
 
-*   **Linimasa Interaktif:** Jantung utama platform adalah _Timeline_ tempat siswa saling berbagi _update_ pembelajaran.
-*   **AI Content Generator (URL Parser):** Fitur revolusioner di mana siswa dapat memasukkan URL berita terbaru (misal: link portal berita atau postingan Facebook). AI di _backend_ akan membaca isi berita tersebut, mengekstrak nilai edukasinya, dan merangkumnya menjadi postingan diskusi interaktif di Linimasa.
-*   **Autonomous AI Posts:** AI tidak hanya diam, tetapi bertindak sebagai "pengguna aktif" yang secara otomatis akan memposting _update_ harian, trivia, atau tantangan ke Linimasa untuk memancing diskusi siswa.
+Multi-Modal Input (Local Processing): Siswa dapat mengunggah soal matematika atau catatan dalam bentuk gambar (foto soal) atau suara (audio). Sistem menggunakan Open-Source Engine (seperti Tesseract OCR lokal atau Whisper Whisper.cpp) di background untuk menghemat biaya API pihak ketiga.
 
-### 3\. Real-time Academic Reactions & Interdisciplinary Matching
+Onboarding & Dynamic Planning: AI menyusun Learning Plan berdasarkan riwayat pencarian, mata pelajaran yang sering ditanyakan, dan target siswa (misal: Persiapan UTBK/SNBT).
 
-*   **Reaksi Edukatif (Bukan Sekadar "Like"):** Menggunakan teknologi **Laravel Reverb (WebSockets)**, sistem reaksi dibuat _real-time_ dan bermakna. Siswa tidak memberikan "Like", melainkan reaksi berbasis pembelajaran seperti: 💡 _(Insightful/Mencerahkan)_, 🧠 _(Mind-Blowing/Brilian)_, atau 🔍 _(Needs Review/Perlu Penjelasan)_.
-*   **Cross-Interest Synergy (Paduan Lintas Minat):** Algoritma sistem secara cerdas akan mempertemukan perbedaan minat. Contoh: Dalam suatu diskusi atau kelompok, sistem akan memadukan siswa dengan minat _Seni_ dan _Pemrograman_ untuk memecahkan kasus "Desain UI/UX", sehingga diskusi menjadi lintas disiplin ilmu dan tidak membosankan.
+2. Intelligent Social Timeline & AI Persona (Linimasa Pengetahuan)
 
-### 4\. Tier-System & Gamified Interactive Rooms
+Linimasa (Feed) berisi diskusi tren, pertanyaan yang belum terjawab, dan kurasi pengetahuan.
 
-*   **Activity Ledger (Log Poin):** Setiap aktivitas sekecil apa pun (berdiskusi, mengunggah materi, mendapat reaksi 💡) akan tercatat dalam _Log Activity_ dan diakumulasikan menjadi _Experience Points_ (XP).
-*   **Privilege System (Hak Istimewa Berbasis Tier):** Siswa yang mencapai jumlah XP atau _Tier_ tertentu (misal: Tier "Mentor" atau "Elite") akan mendapatkan hak eksklusif yang tidak dimiliki siswa biasa.
-*   **Player-Created Study Groups:** Hanya siswa dengan _Tier_ tinggi (atau Operator) yang memiliki hak untuk membentuk Kelompok Belajar Resmi.
-*   **Interactive Mini-Game Rooms:** Siswa dengan _Tier_ tinggi dapat membuat "Room Game Pembelajaran" secara _real-time_ (didukung oleh React & WebSockets). Game ini berupa interaksi seru seperti **Tebak Kata (Vocabulary Charades), Kuis Cepat Terpadu**, atau studi kasus interaktif, yang menjadikan pembelajaran layaknya bermain _multiplayer game_.
+AI Content Generator (URL/Document Parser): Siswa dapat membagikan link berita, jurnal, atau video. AI di backend akan membaca isi tautan tersebut dan merangkumnya menjadi poin-poin edukatif untuk didiskusikan di Linimasa.
 
-### KESELARASAN DENGAN ARSITEKTUR SISTEM (SRS)
+Autonomous AI Posts & "Bounty" System: AI bertindak sebagai pengguna aktif. Jika ada pertanyaan sulit di platform yang belum terjawab selama 15 menit, AI akan secara otomatis menaikkan "Bounty" (hadiah XP tambahan) untuk memancing siswa Tier atas menjawabnya, atau AI akan memberikan satu hint (petunjuk) tambahan di kolom komentar.
 
-*   **Frontend (React + Inertia.js):** Memberikan pengalaman antarmuka yang sangat mulus layaknya _Single Page Application_ (SPA), sangat krusial untuk fitur Linimasa dan Room Game tanpa perlu _reload_ halaman.
-*   **WebSockets (Laravel Reverb):** Infrastruktur utama yang memungkinkan "Academic Reactions" dan "Interactive Mini-Games" berjalan secara instan (_real-time communication_).
-*   **Queue Worker:** Menangani proses AI yang berat di belakang layar, seperti memproses URL berita, menganalisis gambar/suara, serta mengatur algoritma _Cross-Interest Synergy_ tanpa membuat website menjadi lambat (_non-blocking_).
+Crowdsourced Verification: Jawaban terbaik dipilih oleh penanya, namun sistem memiliki validasi komunitas (Upvote) dan validasi AI (AI memberikan lencana "Terverifikasi Sesuai Teori" pada jawaban pengguna yang sangat akurat).
+
+3. Real-time Collaborative Problem Solving & Matching
+
+Interaksi akademik yang terjadi secara instan tanpa perlu memuat ulang halaman.
+
+Real-time Academic Reactions: Menggunakan Laravel Reverb, interaksi tidak menggunakan "Like" biasa, melainkan: 💡 (Mencerahkan), 🧠 (Brilian), 🔍 (Perlu Penjelasan Lebih/Ragu), atau 🤝 (Setuju dengan Solusi).
+
+Cross-Interest Synergy & Expert Summoning: Jika sebuah pertanyaan menggabungkan dua ilmu (Misal: "Sejarah Ekonomi"), algoritma akan mengirimkan Push Notification secara otomatis, "memanggil" (summon) siswa dengan Tier tinggi di Sejarah dan Tier tinggi di Ekonomi untuk berkolaborasi menjawab di satu thread yang sama.
+
+4. Tier-System & Gamified Interactive Rooms
+
+Gamifikasi yang mendalam untuk retensi pengguna jangka panjang.
+
+Subject-Specific Tiers (Spesialisasi): XP tidak bersifat umum. Pengguna memiliki Tier per mata pelajaran (misal: "Grandmaster Matematika", "Novice Fisika"). Aktivitas menjawab, mengunggah catatan, atau mendapat reaksi 🧠 akan menambah XP di spesialisasi tersebut.
+
+Privilege System (Hak Istimewa): Siswa dengan Tier Expert/Mentor dapat mengakses fitur moderasi, seperti memverifikasi jawaban siswa level bawah atau membuat Kelompok Belajar Resmi.
+
+Interactive Mini-Game Rooms (Study Arenas): Tier atas dapat membuat "Room" belajar interaktif. Tersedia mode seperti Live Quiz Battle (AI men-generate soal dari materi yang sedang dibahas dan grup berlomba menjawab cepat) atau Study Case Room (kolaborasi memecahkan masalah dengan real-time whiteboard/text editor).
+
+IMPLEMENTASI ARSITEKTUR: DOMAIN - SERVICE - ACTION (DSA) PATTERN
+
+Untuk memastikan sistem siap digunakan sebagai API (Headless Ready) dan mudah di- scale ke Mobile App (Flutter/Kotlin) di masa depan, arsitektur di-refactor menggunakan pattern DSA.
+
+A. Domain QuestionAnswer
+
+Menangani inti dari "Brainly": Pertanyaan, Jawaban, dan Multimodal Input.
+
+Actions:
+
+ExtractTextFromMediaAction (Memproses gambar/audio lewat lokal OCR/STT).
+
+CreateQuestionAction (Menyimpan pertanyaan ke DB).
+
+SubmitAnswerAction (Menyimpan jawaban dari pengguna).
+
+MarkAsBrainliestAction (Menandai jawaban terbaik).
+
+Services:
+
+QuestionWorkflowService -> Mengorkestrasi aksi. (Misal: Jika user kirim foto -> Panggil ExtractTextFromMediaAction -> lalu panggil CreateQuestionAction).
+
+B. Domain Gamification
+
+Menangani XP, Tier, dan Bounty.
+
+Actions:
+
+CalculateExperiencePointAction (Menghitung XP berdasarkan bobot aktivitas).
+
+AwardUserExpAction (Menambahkan XP ke Subject spesifik pengguna).
+
+CheckAndUpgradeTierAction (Mengevaluasi apakah XP cukup untuk naik level).
+
+CreateBountyAction (Mengunci XP tambahan untuk pertanyaan sulit).
+
+Services:
+
+UserAchievementService -> Dipanggil oleh Event Listener setiap kali user melakukan sesuatu (misal: menjawab), service ini menjalankan aksi-aksi di atas.
+
+C. Domain ArtificialIntelligence
+
+Semua interaksi dengan AI (Lokal maupun API Pihak Ketiga).
+
+Actions:
+
+GenerateStepByStepHintAction (Prompting AI untuk membuat panduan, bukan jawaban).
+
+ParseUrlContentAction (Scraping & merangkum link berita).
+
+ValidateUserAnswerAction (AI memvalidasi kebenaran jawaban siswa secara asinkron).
+
+Services:
+
+AIAssistantService -> Menghubungkan Trigger aplikasi dengan model AI yang tepat.
+
+D. Domain SocialInteraction
+
+Menangani Linimasa, WebSockets, dan Reaksi.
+
+Actions:
+
+CreateTimelinePostAction.
+
+LogAcademicReactionAction (Mencatat reaksi 💡, 🧠 ke DB).
+
+FindCrossInterestUsersAction (Algoritma pencarian user Tier tinggi untuk di-summon).
+
+Services:
+
+RealtimeInteractionService -> Memastikan setelah LogAcademicReactionAction selesai, sistem akan memicu Broadcasting ke Laravel Reverb.
+
+KESELARASAN DENGAN ARSITEKTUR TEKNOLOGI (SRS)
+
+Frontend (React/Vue + Inertia.js): * Sangat ideal untuk membangun komponen SPA Brainly-like. Saat pengguna membuka sebuah pertanyaan, mereka bisa langsung melihat jawaban masuk (typing indicator) tanpa perlu memuat ulang halaman.
+
+WebSockets (Laravel Reverb):
+
+Diimplementasikan pada RealtimeInteractionService untuk Live Academic Reactions, Notifikasi pemanggilan (Summoning), dan sinkronisasi di dalam Interactive Mini-Game Rooms.
+
+Queue & Job Worker (Redis/Database):
+
+WAJIB digunakan untuk membungkus Domain ArtificialIntelligence. Proses seperti OCR gambar ExtractTextFromMediaAction atau Scraping URL ParseUrlContentAction akan memakan waktu 2-10 detik. Ini harus dilempar ke Background Job agar tidak memblokir antarmuka pengguna.
