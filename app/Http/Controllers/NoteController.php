@@ -9,6 +9,7 @@ use App\Http\Resources\SubjectResource;
 use App\Models\Note;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,7 +42,13 @@ class NoteController extends Controller
      */
     public function store(StoreNoteRequest $request): RedirectResponse
     {
-        Auth::user()->notes()->create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('notes', 'public');
+        }
+
+        Auth::user()->notes()->create($data);
 
         return redirect()->route('notes.index');
     }
@@ -78,7 +85,16 @@ class NoteController extends Controller
             abort(403);
         }
 
-        $note->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            if ($note->image_path) {
+                Storage::disk('public')->delete($note->image_path);
+            }
+            $data['image_path'] = $request->file('image')->store('notes', 'public');
+        }
+
+        $note->update($data);
 
         return redirect()->route('notes.index');
     }
@@ -90,6 +106,10 @@ class NoteController extends Controller
     {
         if ($note->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if ($note->image_path) {
+            Storage::disk('public')->delete($note->image_path);
         }
 
         $note->delete();

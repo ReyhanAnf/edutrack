@@ -14,7 +14,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Domains\ArtificialIntelligence\Contracts\QuizGeneratorInterface::class,
+            \App\Domains\ArtificialIntelligence\Services\HttpQuizGenerator::class
+        );
     }
 
     /**

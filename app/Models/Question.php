@@ -14,6 +14,7 @@ class Question extends Model
     protected $fillable = [
         'user_id',
         'subject_id',
+        'quiz_id',
         'title',
         'body',
         'image_path',
@@ -39,6 +40,11 @@ class Question extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(Quiz::class);
     }
 
     public function answers(): HasMany

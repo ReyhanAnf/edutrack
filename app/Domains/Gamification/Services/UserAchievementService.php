@@ -25,7 +25,13 @@ class UserAchievementService
 
         // 2. Award XP and check/upgrade tier
         if ($xpAmount > 0 && $subjectId !== null) {
-            $this->awardUserExpAction->execute($user, $subjectId, $xpAmount);
+            // Map personal subject_id to global_subject_id
+            $subject = \App\Models\Subject::find($subjectId);
+            $globalSubjectId = $subject?->global_subject_id;
+
+            if ($globalSubjectId) {
+                $this->awardUserExpAction->execute($user, $globalSubjectId, $xpAmount);
+            }
         }
     }
 }

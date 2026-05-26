@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserSubjectExp extends Model
 {
-    protected $fillable = ['user_id', 'subject_id', 'xp', 'tier'];
+    protected $fillable = ['user_id', 'global_subject_id', 'xp', 'tier'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function subject()
+    public function globalSubject()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(GlobalSubject::class);
     }
 }

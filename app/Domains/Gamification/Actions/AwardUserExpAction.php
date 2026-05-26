@@ -16,17 +16,17 @@ class AwardUserExpAction
     }
 
     /**
-     * Menambahkan XP ke Subject spesifik pengguna
+     * Menambahkan XP ke Global Subject spesifik pengguna
      *
      * @param User $user
-     * @param int $subjectId
+     * @param int $globalSubjectId
      * @param int $xpAmount
      * @return UserSubjectExp
      */
-    public function execute(User $user, int $subjectId, int $xpAmount): UserSubjectExp
+    public function execute(User $user, int $globalSubjectId, int $xpAmount): UserSubjectExp
     {
         $userSubject = UserSubjectExp::firstOrCreate(
-            ['user_id' => $user->id, 'subject_id' => $subjectId],
+            ['user_id' => $user->id, 'global_subject_id' => $globalSubjectId],
             ['xp' => 0, 'tier' => 'Novice']
         );
 

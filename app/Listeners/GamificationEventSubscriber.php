@@ -18,6 +18,9 @@ class GamificationEventSubscriber
 
     public function handleQuestionCreated(QuestionCreated $event): void
     {
+        // Generate AI hint in the background
+        \App\Jobs\GenerateQuestionHintJob::dispatch($event->question);
+
         $this->achievementService->handleActivity(
             $event->question->user,
             $event->question->subject_id,

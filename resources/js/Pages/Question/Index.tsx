@@ -25,6 +25,7 @@ interface Question {
     user_reaction?: string | null;
     reactions_summary?: Record<string, number>;
     image_url?: string | null;
+    quiz_id?: number | null;
     created_at: string;
     user: {
         id: number;
@@ -430,12 +431,17 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                                                     )}
 
                                                     <span
-                                                        className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide ${question.status === 'resolved'
+                                                        className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide ${
+                                                            question.quiz_id
+                                                                ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
+                                                                : question.status === 'resolved'
                                                                 ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
                                                                 : 'bg-sky-50 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'
-                                                            }`}
+                                                        }`}
                                                     >
-                                                        {question.status === 'resolved'
+                                                        {question.quiz_id
+                                                            ? 'Berbagi Kuis'
+                                                            : question.status === 'resolved'
                                                             ? 'Terjawab'
                                                             : 'Butuh Bantuan'}
                                                     </span>
@@ -459,6 +465,27 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                                                             alt={question.title}
                                                             className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         />
+                                                    </div>
+                                                )}
+
+                                                {/* Quiz Link */}
+                                                {question.quiz_id && (
+                                                    <div className="mt-4 p-4 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 flex items-center justify-between group/quiz">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">
+                                                                <span className="material-symbols-outlined">psychology_alt</span>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-primary uppercase tracking-wider">Kuis AI Tersedia</p>
+                                                                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">Klik untuk mulai latihan</p>
+                                                            </div>
+                                                        </div>
+                                                        <Link 
+                                                            href={route('quizzes.show', question.quiz_id)}
+                                                            className="px-4 py-2 bg-white dark:bg-gray-800 border border-sky-200 dark:border-sky-700 rounded-lg text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                        >
+                                                            Buka Kuis
+                                                        </Link>
                                                     </div>
                                                 )}
 

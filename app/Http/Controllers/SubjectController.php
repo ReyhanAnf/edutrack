@@ -36,7 +36,18 @@ class SubjectController extends Controller
      */
     public function store(StoreSubjectRequest $request): RedirectResponse
     {
-        Auth::user()->subjects()->create($request->validated());
+        $data = $request->validated();
+        
+        // Find or create a global subject with the same name (case-insensitive)
+        $globalSubject = \App\Models\GlobalSubject::firstOrCreate(
+            ['name' => trim($data['name'])],
+            ['color_code' => $data['color_code'] ?? '#3b82f6']
+        );
+
+        Auth::user()->subjects()->create([
+            ...$data,
+            'global_subject_id' => $globalSubject->id,
+        ]);
 
         return redirect()->route('subjects.index');
     }

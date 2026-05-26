@@ -21,6 +21,7 @@ class NoteResource extends JsonResource
             'title' => $this->title,
             'category' => $this->category,
             'content' => $this->content,
+            'image_url' => $this->image_path ? asset('storage/'.$this->image_path) : null,
             'status' => $this->status,
             'is_favorite' => $this->is_favorite,
             'created_at' => $this->created_at,

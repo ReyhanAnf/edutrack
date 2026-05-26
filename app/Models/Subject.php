@@ -13,6 +13,7 @@ class Subject extends Model
 
     protected $fillable = [
         'user_id',
+        'global_subject_id',
         'name',
         'color_code',
     ];
@@ -20,6 +21,11 @@ class Subject extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function globalSubject(): BelongsTo
+    {
+        return $this->belongsTo(GlobalSubject::class);
     }
 
     public function assignments(): HasMany
@@ -50,5 +56,10 @@ class Subject extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
+    }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
     }
 }

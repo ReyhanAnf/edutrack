@@ -11,14 +11,14 @@ interface Subject {
 interface LeaderboardEntry {
     id: number;
     user_id: number;
-    subject_id: number;
+    global_subject_id: number;
     xp: number;
     tier: string;
     user: {
         id: number;
         name: string;
     };
-    subject: Subject;
+    global_subject: Subject;
 }
 
 interface Props extends PageProps {
@@ -156,12 +156,12 @@ export default function Leaderboard({ auth, leaderboard, subjects, filters }: Pr
                                                 <span 
                                                     className="inline-flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-inset"
                                                     style={{ 
-                                                        backgroundColor: `${entry.subject.color_code}15`,
-                                                        color: entry.subject.color_code,
-                                                        borderColor: `${entry.subject.color_code}30`
+                                                        backgroundColor: `${entry.global_subject?.color_code || '#3b82f6'}15`,
+                                                        color: entry.global_subject?.color_code || '#3b82f6',
+                                                        borderColor: `${entry.global_subject?.color_code || '#3b82f6'}30`
                                                     }}
                                                 >
-                                                    {entry.subject.name}
+                                                    {entry.global_subject?.name || 'Mata Pelajaran'}
                                                 </span>
                                                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset uppercase tracking-wider ${getTierColor(entry.tier)}`}>
                                                     <span className="material-symbols-outlined text-[12px]">{getTierIcon(entry.tier)}</span>

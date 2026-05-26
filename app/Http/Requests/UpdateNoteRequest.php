@@ -27,6 +27,7 @@ class UpdateNoteRequest extends FormRequest
             'content' => 'required|string',
             'status' => 'required|in:In Progress,Completed',
             'is_favorite' => 'nullable|boolean',
+            'image' => 'nullable|image|max:2048',
             'subject_id' => [
                 'nullable',
                 \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {

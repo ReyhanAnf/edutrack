@@ -21,6 +21,7 @@ class Note extends Model
         'title',
         'category',
         'content',
+        'image_path',
         'status',
         'is_favorite',
     ];

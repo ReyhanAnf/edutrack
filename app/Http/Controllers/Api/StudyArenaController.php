@@ -26,6 +26,7 @@ class StudyArenaController extends Controller
     {
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
+            'quiz_id' => 'nullable|exists:quizzes,id',
             'room_name' => 'required|string|max:255',
             'mode' => 'required|in:live_quiz_battle,study_case_room',
         ]);
@@ -33,6 +34,7 @@ class StudyArenaController extends Controller
         $arena = StudyArena::create([
             'created_by' => Auth::id() ?? 1, // fallback for testing without auth
             'subject_id' => $request->subject_id,
+            'quiz_id' => $request->quiz_id,
             'room_name' => $request->room_name,
             'mode' => $request->mode,
         ]);

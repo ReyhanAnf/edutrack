@@ -17,6 +17,7 @@ interface Note {
     title: string;
     category: string;
     content: string;
+    image_url?: string | null;
     status: string;
     is_favorite: boolean;
     created_at: string;
@@ -115,6 +116,16 @@ export default function Index({ auth, notes }: Props) {
                             <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-4 leading-relaxed">
                                 {note.content}
                             </p>
+
+                            {note.image_url && (
+                                <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 h-32">
+                                    <img 
+                                        src={note.image_url} 
+                                        alt={note.title} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="px-6 py-4 bg-gray-50/50 dark:bg-gray-700/50 border-t border-gray-50 dark:border-gray-700 flex justify-end gap-2">

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Gamification\Actions\GetUserActivityStatsAction;
+use App\Domains\Gamification\Actions\UpdateMissionProgressAction;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Http\Resources\AttendanceResource;
@@ -17,12 +19,29 @@ class AttendanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(GetUserActivityStatsAction $statsAction, UpdateMissionProgressAction $missionAction): Response
     {
+        $user = Auth::user();
+        
+        // Update mission progress on page load
+        $missionAction->execute($user);
+
         return Inertia::render('Attendance/Index', [
             'attendances' => AttendanceResource::collection(
-                Auth::user()->attendances()->with('subject')->latest('date')->get()
+                $user->attendances()->with('subject')->latest('date')->get()
             ),
+            'activity_stats' => $statsAction->execute($user),
+            'missions' => $user->userMissions()->with('mission')->get()->map(function ($um) {
+                return [
+                    'id' => $um->mission->id,
+                    'name' => $um->mission->name,
+                    'description' => $um->mission->description,
+                    'requirement' => $um->mission->requirement,
+                    'progress' => $um->progress,
+                    'points_reward' => $um->mission->points_reward,
+                    'completed_at' => $um->completed_at,
+                ];
+            }),
         ]);
     }
 

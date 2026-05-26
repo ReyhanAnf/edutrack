@@ -36,6 +36,7 @@ export default function Authenticated({
             group: 'Pusat Belajar',
             items: [
                 { label: 'Forum Tanya Jawab', href: route('questions.index'), icon: 'forum', active: route().current('questions.*') },
+                { label: 'Kuis AI', href: route('quizzes.index'), icon: 'psychology_alt', active: route().current('quizzes.*') },
                 { label: 'Leaderboard', href: route('leaderboard.index'), icon: 'social_leaderboard', active: route().current('leaderboard.*') },
                 { label: 'Catatan Saya', href: route('notes.index'), icon: 'edit_note', active: route().current('notes.*') },
                 { label: 'Tugas', href: route('assignments.index'), icon: 'assignment', active: route().current('assignments.*') },
@@ -45,7 +46,7 @@ export default function Authenticated({
             group: 'Performa',
             items: [
                 { label: 'Nilai', href: route('grades.index'), icon: 'grade', active: route().current('grades.*') },
-                { label: 'Kehadiran', href: route('attendances.index'), icon: 'verified_user', active: route().current('attendances.*') },
+                { label: 'Statistik Aktivitas', href: route('attendances.index'), icon: 'calendar_month', active: route().current('attendances.*') },
             ]
         }
     ];

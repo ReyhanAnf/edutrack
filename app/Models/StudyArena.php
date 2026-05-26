@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudyArena extends Model
 {
-    protected $fillable = ['created_by', 'subject_id', 'room_name', 'mode', 'is_active'];
+    protected $fillable = ['created_by', 'subject_id', 'quiz_id', 'room_name', 'mode', 'is_active'];
 
     public function creator()
     {
@@ -16,5 +16,10 @@ class StudyArena extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function quiz()
+    {
+        return $this->belongsTo(Quiz::class);
     }
 }

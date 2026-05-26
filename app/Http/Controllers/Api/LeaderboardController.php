@@ -14,11 +14,17 @@ class LeaderboardController extends Controller
     public function index(Request $request)
     {
         $subjectId = $request->query('subject_id');
-
-        $query = UserSubjectExp::with(['user', 'subject']);
+        $globalSubjectId = null;
 
         if ($subjectId) {
-            $query->where('subject_id', $subjectId);
+            $subject = \App\Models\Subject::find($subjectId);
+            $globalSubjectId = $subject?->global_subject_id;
+        }
+
+        $query = UserSubjectExp::with(['user', 'globalSubject']);
+
+        if ($globalSubjectId) {
+            $query->where('global_subject_id', $globalSubjectId);
         }
 
         $leaderboard = $query->orderBy('xp', 'desc')
@@ -28,7 +34,7 @@ class LeaderboardController extends Controller
                 return [
                     'user_id' => $item->user_id,
                     'user_name' => $item->user->name,
-                    'subject' => $item->subject->name,
+                    'subject' => $item->globalSubject->name,
                     'xp' => $item->xp,
                     'tier' => $item->tier,
                 ];
