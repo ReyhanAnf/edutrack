@@ -1,12 +1,13 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import Modal from '@/Components/Modal';
+import Drawer from '@/Components/Drawer';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
+import MathInput from 'react-math-keyboard';
 
 interface Subject {
     id: number;
@@ -59,6 +60,7 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
     const [activeReactionPicker, setActiveReactionPicker] = useState<number | null>(null);
+    const [bodyEditorKey, setBodyEditorKey] = useState(0);
 
     const REACTIONS = [
         { type: 'icon', value: 'lightbulb', label: 'Genius' },
@@ -177,6 +179,19 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
         };
     }, [auth.user.id]);
 
+    const openCreateQuestionModal = () => {
+        setEditingQuestion(null);
+        reset();
+        setBodyEditorKey((currentKey) => currentKey + 1);
+        setIsQuestionModalOpen(true);
+    };
+
+    const closeQuestionModal = () => {
+        setIsQuestionModalOpen(false);
+        setEditingQuestion(null);
+        reset();
+    };
+
     const submitQuestion: FormEventHandler = (event) => {
         event.preventDefault();
         
@@ -213,6 +228,7 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
             image: null,
             stay_on_timeline: true,
         });
+        setBodyEditorKey((currentKey) => currentKey + 1);
         setIsQuestionModalOpen(true);
     };
 
@@ -355,14 +371,14 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                             <div className="flex items-center gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setIsQuestionModalOpen(true)}
+                                    onClick={openCreateQuestionModal}
                                     className="flex min-h-10 flex-1 items-center rounded-xl border border-gray-200 bg-gray-50 px-4 text-left text-sm text-gray-500 transition-colors hover:border-sky-200 hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-sky-900 dark:hover:bg-sky-900/20"
                                 >
-                                    Lagi stuck di soal apa hari ini?
+                                    Lagi stuck di soal apa hari ini? Klik untuk tulis atau edit pertanyaan.
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setIsQuestionModalOpen(true)}
+                                    onClick={openCreateQuestionModal}
                                     className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
                                 >
                                     <span className="material-symbols-outlined text-base">edit</span>
@@ -663,16 +679,20 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                 </div>
             </div>
 
-            <Modal show={isQuestionModalOpen} maxWidth="2xl" onClose={() => setIsQuestionModalOpen(false)}>
+            <Drawer show={isQuestionModalOpen} maxWidth="2xl" onClose={closeQuestionModal}>
                 <div className="bg-white p-6 dark:bg-gray-800">
                     <div className="mb-6 flex items-start justify-between gap-4">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Buat Pertanyaan</h2>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Bagikan soal dan konteksnya ke timeline belajar.</p>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                                {editingQuestion ? 'Edit Pertanyaan' : 'Buat Pertanyaan'}
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {editingQuestion ? 'Perbarui isi pertanyaan yang sudah diposting.' : 'Bagikan soal dan konteksnya ke timeline belajar.'}
+                            </p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => setIsQuestionModalOpen(false)}
+                            onClick={closeQuestionModal}
                             className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-900 dark:hover:text-gray-200"
                             aria-label="Tutup modal"
                         >
@@ -717,16 +737,22 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
 
                         <div>
                             <InputLabel htmlFor="timeline_body" value="Detail Pertanyaan" />
-                            <textarea
-                                id="timeline_body"
-                                name="body"
-                                value={data.body}
-                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                rows={7}
-                                onChange={(event) => setData('body', event.target.value)}
-                                placeholder="Tuliskan soal, bagian yang membingungkan, dan apa yang sudah dicoba."
-                                required
-                            />
+                            <div className="mt-1 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                                <MathInput
+                                    key={bodyEditorKey}
+                                    setValue={(value) => setData('body', value)}
+                                    initialLatex={data.body}
+                                    lang="en"
+                                    fullWidth
+                                    withShowKeyboardButton
+                                    numericToolbarKeys={[]}
+                                    alphabeticToolbarKeys={[]}
+                                    size="medium"
+                                />
+                            </div>
+                            <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                                Tulis biasa seperti chat, lalu pakai tombol keyboard jika perlu rumus atau simbol matematika.
+                            </p>
                             <InputError message={errors.body} className="mt-2" />
                         </div>
 
@@ -771,16 +797,18 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                         <div className="flex items-center justify-end gap-3 pt-2">
                             <button
                                 type="button"
-                                onClick={() => setIsQuestionModalOpen(false)}
+                                onClick={closeQuestionModal}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100"
                             >
                                 Batal
                             </button>
-                            <PrimaryButton disabled={processing}>Post Pertanyaan</PrimaryButton>
+                            <PrimaryButton disabled={processing}>
+                                {editingQuestion ? 'Simpan Perubahan' : 'Post Pertanyaan'}
+                            </PrimaryButton>
                         </div>
                     </form>
                 </div>
-            </Modal>
+            </Drawer>
         </AuthenticatedLayout>
     );
 }

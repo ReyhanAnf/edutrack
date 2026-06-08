@@ -4,15 +4,65 @@ import { PropsWithChildren } from 'react';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
-            </div>
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#eff6ff_100%)] text-gray-900 dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] dark:text-gray-100">
+            <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between rounded-2xl border border-white/70 bg-white/70 px-4 py-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
+                    <Link href="/" className="flex items-center gap-3">
+                        <ApplicationLogo className="h-10 w-10 fill-current text-primary" />
+                        <div>
+                            <p className="text-sm font-semibold tracking-wide text-primary">Edutrack</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Social learning network</p>
+                        </div>
+                    </Link>
 
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg dark:bg-gray-800">
-                {children}
+                    <Link
+                        href="/"
+                        className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-sky-200 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200"
+                    >
+                        Kembali
+                    </Link>
+                </div>
+
+                <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:py-10">
+                    <div className="hidden lg:block">
+                        <div className="max-w-xl space-y-6">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:border-sky-900/40 dark:bg-sky-950/40">
+                                <span className="material-symbols-outlined text-[16px]">school</span>
+                                Belajar lebih sosial
+                            </div>
+
+                            <div className="space-y-4">
+                                <h1 className="text-4xl font-black leading-tight text-gray-900 dark:text-white">
+                                    Tanya, dukung, dan naik tier dalam satu ekosistem belajar.
+                                </h1>
+                                <p className="max-w-lg text-base leading-7 text-gray-600 dark:text-gray-300">
+                                    Login untuk ikut menjawab, memberi reaction, dan naik leaderboard per mata pelajaran.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    'Pertanyaan & jawaban realtime',
+                                    'Reaction emoji pendidikan',
+                                    'Leaderboard tier XP',
+                                    'Study arena dan bounty',
+                                ].map((item) => (
+                                    <div key={item} className="rounded-2xl border border-gray-200 bg-white/80 p-4 text-sm text-gray-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 dark:text-gray-300">
+                                        {item}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mx-auto w-full max-w-md">
+                        <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-1 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                            <div className="rounded-[1.4rem] border border-gray-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+                                {children}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

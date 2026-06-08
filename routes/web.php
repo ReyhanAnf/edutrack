@@ -17,6 +17,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\ScheduleController;
 
 use App\Http\Controllers\SubjectController;
+use App\Models\Question;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,11 +26,40 @@ use Inertia\Inertia;
 
 
 Route::get('/', function () {
+    $featuredQuestions = Question::query()
+        ->with([
+            'user',
+            'subject',
+            'brainliestAnswer.user',
+        ])
+        ->withCount('answers')
+        ->latest()
+        ->get()
+        ->map(fn (Question $question) => [
+            'id' => $question->id,
+            'title' => $question->title,
+            'body' => $question->body,
+            'answers_count' => $question->answers_count,
+            'created_at' => $question->created_at,
+            'subject' => $question->subject ? [
+                'id' => $question->subject->id,
+                'name' => $question->subject->name,
+                'color_code' => $question->subject->color_code,
+            ] : null,
+            'user' => [
+                'id' => $question->user?->id,
+                'name' => $question->user?->name,
+            ],
+            'answer_preview' => $question->brainliestAnswer?->body ?? null,
+            'answer_author' => $question->brainliestAnswer?->user?->name ?? null,
+        ]);
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'featuredQuestions' => $featuredQuestions,
     ]);
 });
 
