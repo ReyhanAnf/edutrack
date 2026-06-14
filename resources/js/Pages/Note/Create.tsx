@@ -27,7 +27,7 @@ export default function Create({ auth, subjects }: Props) {
         content: string;
         status: string;
         is_favorite: boolean;
-        image: File | null;
+        attachments: File[];
     }>({
         subject_id: '',
         title: '',
@@ -35,8 +35,21 @@ export default function Create({ auth, subjects }: Props) {
         content: '',
         status: 'In Progress',
         is_favorite: false,
-        image: null,
+        attachments: [],
     });
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            setData('attachments', [...data.attachments, ...newFiles]);
+        }
+    };
+
+    const removeAttachment = (index: number) => {
+        const newAttachments = [...data.attachments];
+        newAttachments.splice(index, 1);
+        setData('attachments', newAttachments);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -175,38 +188,59 @@ export default function Create({ auth, subjects }: Props) {
                             </div>
 
                             <div>
-                                <InputLabel value="Lampiran Gambar (Opsional)" />
-                                <div className="mt-2 flex items-center gap-4">
+                                <InputLabel value="Lampiran (Gambar & PDF)" />
+                                <div className="mt-2 space-y-4">
                                     <label className="flex flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 transition-colors hover:border-primary hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary/50">
-                                        <span className="material-symbols-outlined mb-2 text-gray-400">add_a_photo</span>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {data.image ? data.image.name : 'Upload foto catatan atau diagram'}
+                                        <span className="material-symbols-outlined mb-2 text-gray-400 text-3xl">upload_file</span>
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Klik untuk upload atau drag & drop file
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Mendukung banyak file Gambar (JPG, PNG) & PDF (Maks 10MB/file)
                                         </p>
                                         <input
                                             type="file"
                                             className="hidden"
-                                            accept="image/*"
-                                            onChange={(e) => setData('image', e.target.files?.[0] || null)}
+                                            multiple
+                                            accept="image/*,application/pdf"
+                                            onChange={handleFileChange}
                                         />
                                     </label>
-                                    {data.image && (
-                                        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                                            <img
-                                                src={URL.createObjectURL(data.image)}
-                                                alt="Preview"
-                                                className="h-full w-full object-cover"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setData('image', null)}
-                                                className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white shadow-sm hover:bg-red-600"
-                                            >
-                                                <span className="material-symbols-outlined text-xs">close</span>
-                                            </button>
+                                    
+                                    {data.attachments.length > 0 && (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                            {data.attachments.map((file, index) => {
+                                                const isImage = file.type.startsWith('image/');
+                                                return (
+                                                    <div key={index} className="relative group rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+                                                        {isImage ? (
+                                                            <div className="aspect-square">
+                                                                <img
+                                                                    src={URL.createObjectURL(file)}
+                                                                    alt={file.name}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="aspect-square flex flex-col items-center justify-center p-3 bg-red-50 dark:bg-red-900/10">
+                                                                <span className="material-symbols-outlined text-4xl text-red-500 mb-2">picture_as_pdf</span>
+                                                                <span className="text-xs text-center text-gray-600 dark:text-gray-400 line-clamp-2 w-full px-1 font-medium">{file.name}</span>
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeAttachment(index)}
+                                                            className="absolute right-2 top-2 rounded-full bg-red-500 p-1.5 text-white shadow-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px]">close</span>
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
-                                <InputError message={errors.image} className="mt-2" />
+                                <InputError message={errors.attachments} className="mt-2" />
                             </div>
 
                             <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-gray-700">

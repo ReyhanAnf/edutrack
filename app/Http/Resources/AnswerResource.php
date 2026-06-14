@@ -24,6 +24,7 @@ class AnswerResource extends JsonResource
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
+                'profile_photo_url' => $this->user?->profile_photo_url,
             ],
         ];
     }

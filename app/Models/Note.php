@@ -45,4 +45,9 @@ class Note extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(NoteAttachment::class);
+    }
 }

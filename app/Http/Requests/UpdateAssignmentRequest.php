@@ -29,6 +29,7 @@ class UpdateAssignmentRequest extends FormRequest
                 }),
             ],
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'due_date' => 'required|date',
             'status' => 'required|in:Pending,Completed',
         ];

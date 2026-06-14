@@ -1,11 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useEffect, useState } from 'react';
+import { useOnlineUsersStore } from '@/lib/online-users-store';
 
 export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const user = usePage().props.auth.user;
+    const { setOnlineUsers, addOnlineUser, removeOnlineUser } = useOnlineUsersStore();
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('theme') === 'dark' || 
                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -21,10 +23,30 @@ export default function Authenticated({
         }
     }, [isDarkMode]);
 
+    useEffect(() => {
+        const channel = window.Echo.join('online')
+            .here((users: Array<{ id: number }>) => {
+                setOnlineUsers(users.map(u => u.id));
+            })
+            .joining((user: { id: number }) => {
+                addOnlineUser(user.id);
+            })
+            .leaving((user: { id: number }) => {
+                removeOnlineUser(user.id);
+            });
+
+        return () => {
+            window.Echo.leave('online');
+        };
+    }, []);
+
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
-    const navItems = [
-        { label: 'Timeline Belajar', href: route('dashboard'), icon: 'dynamic_feed', active: route().current('dashboard') },
+    const baseNavItems = [
+        { label: 'Forum Belajar', href: route('questions.index'), icon: 'dynamic_feed', active: route().current('dashboard') || route().current('questions.*') },
+    ];
+
+    const authenticatedNavItems = [
         { 
             group: 'Akademik',
             items: [
@@ -35,9 +57,10 @@ export default function Authenticated({
         { 
             group: 'Pusat Belajar',
             items: [
-                { label: 'Forum Tanya Jawab', href: route('questions.index'), icon: 'forum', active: route().current('questions.*') },
-                { label: 'Kuis AI', href: route('quizzes.index'), icon: 'psychology_alt', active: route().current('quizzes.*') },
+                { label: 'Kuis AI', href: route('quizzes.index'), icon: 'psychology', active: route().current('quizzes.*') && !route().current('quizzes.my-scores') },
+                { label: 'Nilai Kuis', href: route('quizzes.my-scores'), icon: 'military_tech', active: route().current('quizzes.my-scores') },
                 { label: 'Leaderboard', href: route('leaderboard.index'), icon: 'social_leaderboard', active: route().current('leaderboard.*') },
+                { label: 'Teman Belajar', href: route('friends.index'), icon: 'group', active: route().current('friends.*') },
                 { label: 'Catatan Saya', href: route('notes.index'), icon: 'edit_note', active: route().current('notes.*') },
                 { label: 'Tugas', href: route('assignments.index'), icon: 'assignment', active: route().current('assignments.*') },
             ]
@@ -50,6 +73,23 @@ export default function Authenticated({
             ]
         }
     ];
+
+    let navItems: any[] = [...baseNavItems];
+
+    if (user) {
+        navItems = [...navItems, ...authenticatedNavItems];
+        
+        if (user.is_admin) {
+            navItems.push({
+                group: 'Admin Panel',
+                items: [
+                    { label: 'Dasbor Admin', href: route('admin.dashboard'), icon: 'monitoring', active: route().current('admin.dashboard') },
+                    { label: 'Kelola Pengguna', href: route('admin.users.index'), icon: 'manage_accounts', active: route().current('admin.users.*') },
+                    { label: 'Kelola Peran', href: route('admin.roles.index'), icon: 'admin_panel_settings', active: route().current('admin.roles.*') },
+                ]
+            });
+        }
+    }
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -69,18 +109,25 @@ export default function Authenticated({
                             <>
                                 <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 dark:text-gray-500">{item.group}</h3>
                                 <div className="space-y-1">
-                                    {item.items.map((subItem, subIndex) => (
+                                    {item.items.map((subItem: any, subIndex: number) => (
                                         <Link
                                             key={subIndex}
                                             href={subItem.href}
-                                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
+                                            className={`flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                                 subItem.active 
                                                 ? 'bg-sky-50 dark:bg-sky-900/30 text-primary font-medium' 
                                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                             }`}
                                         >
-                                            <span className="material-symbols-outlined">{subItem.icon}</span>
-                                            {subItem.label}
+                                            <div className="flex items-center gap-3">
+                                                <span className="material-symbols-outlined">{subItem.icon}</span>
+                                                {subItem.label}
+                                            </div>
+                                            {subItem.label === 'Teman Belajar' && user?.pending_friend_requests_count! > 0 && (
+                                                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-pulse">
+                                                    {user.pending_friend_requests_count}
+                                                </span>
+                                            )}
                                         </Link>
                                     ))}
                                 </div>
@@ -112,15 +159,25 @@ export default function Authenticated({
                     </span>
                     {isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
                 </button>
-                <Link
-                    href={route('logout')}
-                    method="post"
-                    as="button"
-                    className="flex items-center gap-3 px-4 py-2 w-full text-left text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                >
-                    <span className="material-symbols-outlined">logout</span>
-                    Keluar
-                </Link>
+                {user ? (
+                    <Link
+                        href={route('logout')}
+                        method="post"
+                        as="button"
+                        className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-600 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                        <span className="material-symbols-outlined">logout</span>
+                        Keluar
+                    </Link>
+                ) : (
+                    <Link
+                        href={route('login')}
+                        className="flex items-center gap-3 px-4 py-2 w-full text-left text-sky-600 dark:text-sky-400 hover:text-sky-700 transition-colors"
+                    >
+                        <span className="material-symbols-outlined">login</span>
+                        Masuk
+                    </Link>
+                )}
             </div>
         </>
     );
@@ -128,12 +185,14 @@ export default function Authenticated({
     return (
         <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full overflow-y-auto">
-                <SidebarContent />
-            </aside>
+            {user && (
+                <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full overflow-y-auto">
+                    <SidebarContent />
+                </aside>
+            )}
 
             {/* Mobile Sidebar (drawer) */}
-            {sidebarOpen && (
+            {sidebarOpen && user && (
                 <div className="fixed inset-0 z-40 md:hidden">
                     <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
                     <aside className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col shadow-2xl">
@@ -143,22 +202,48 @@ export default function Authenticated({
             )}
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col md:ml-64 min-h-screen pb-20 md:pb-0">
+            <main className={`flex-1 flex flex-col min-h-screen pb-20 md:pb-0 ${user ? 'md:ml-64' : ''}`}>
                 {/* Header */}
                 <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shadow-sm">
-                    {/* Mobile menu button */}
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    <div className="flex items-center gap-4 flex-1">
+                        {!user && (
+                            <Link href="/" className="text-xl font-bold text-primary flex items-center gap-2 mr-4">
+                                <span className="material-symbols-outlined">school</span>
+                                <span className="hidden sm:inline">EduTrack</span>
+                            </Link>
+                        )}
+                        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-200 shrink-0 hidden sm:block">
                             {header || 'Dashboard'}
                         </h1>
+
+                        <div className="flex-1 max-w-md mx-2 sm:mx-6">
+                            <form action={route('search.index')} method="GET" className="relative">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+                                <input 
+                                    type="text" 
+                                    name="q"
+                                    placeholder="Cari..." 
+                                    className="w-full bg-gray-100 dark:bg-gray-700 border-transparent focus:border-sky-500 focus:bg-white dark:focus:bg-gray-900 rounded-full py-1.5 pl-10 pr-4 text-sm transition-all"
+                                />
+                            </form>
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href={route('profile.edit')} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
-                            <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">Selamat datang, <strong>{user.name}</strong></span>
-                            <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900 rounded-full flex items-center justify-center text-primary font-bold">
-                                {user.name.charAt(0)}
+                        {user ? (
+                            <Link href={route('profile.edit')} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                                <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">Selamat datang, <strong>{user.name}</strong></span>
+                                <img 
+                                    src={user.profile_photo_url} 
+                                    alt={user.name} 
+                                    className="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm"
+                                />
+                            </Link>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Link href={route('login')} className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Masuk</Link>
+                                <Link href={route('register')} className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-sky-600 transition-colors">Daftar</Link>
                             </div>
-                        </Link>
+                        )}
                     </div>
                 </header>
 
@@ -169,7 +254,8 @@ export default function Authenticated({
             </main>
 
             {/* Mobile Bottom Navigation Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 flex justify-around items-center h-16 px-2 safe-area-pb">
+            {user ? (
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 flex justify-around items-center h-16 px-2 safe-area-pb">
                 <Link 
                     href={route('dashboard')} 
                     className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('dashboard') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
@@ -178,20 +264,12 @@ export default function Authenticated({
                     <span className="text-[10px] font-medium">Timeline</span>
                 </Link>
                 <Link 
-                    href={route('questions.index')} 
-                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('questions.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                    href={route('quizzes.index')} 
+                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('quizzes.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
                 >
-                    <span className="material-symbols-outlined text-2xl">forum</span>
-                    <span className="text-[10px] font-medium">Forum</span>
+                    <span className="material-symbols-outlined text-2xl">psychology_alt</span>
+                    <span className="text-[10px] font-medium">Kuis AI</span>
                 </Link>
-                <div className="relative -top-5 flex justify-center w-16">
-                    <Link 
-                        href={route('questions.create')} 
-                        className="flex items-center justify-center w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 hover:bg-primary/90 transition-transform active:scale-95"
-                    >
-                        <span className="material-symbols-outlined text-3xl">add</span>
-                    </Link>
-                </div>
                 <Link 
                     href={route('leaderboard.index')} 
                     className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('leaderboard.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
@@ -207,6 +285,7 @@ export default function Authenticated({
                     <span className="text-[10px] font-medium">Menu</span>
                 </button>
             </nav>
+            ) : null}
         </div>
     );
 }

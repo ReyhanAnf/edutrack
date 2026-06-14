@@ -8,7 +8,7 @@
 
         <!-- PWA / Mobile First Meta Tags -->
         <meta name="theme-color" content="#ffffff">
-        <link rel="manifest" href="/build/manifest.webmanifest">
+        <link rel="manifest" href="/manifest.webmanifest">
         <link rel="apple-touch-icon" href="/logo.png">
 
 
@@ -22,6 +22,17 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+        <!-- PWA Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                        .then(registration => console.log('SW registered!', registration))
+                        .catch(err => console.log('SW registration failed!', err));
+                });
+            }
+        </script>
 
         <!-- Scripts -->
         @routes

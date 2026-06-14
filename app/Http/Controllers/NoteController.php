@@ -22,7 +22,7 @@ class NoteController extends Controller
     {
         return Inertia::render('Note/Index', [
             'notes' => NoteResource::collection(
-                Auth::user()->notes()->with('subject')->latest()->get()
+                Auth::user()->notes()->with(['subject', 'attachments'])->latest()->get()
             ),
         ]);
     }
@@ -48,7 +48,21 @@ class NoteController extends Controller
             $data['image_path'] = $request->file('image')->store('notes', 'public');
         }
 
-        Auth::user()->notes()->create($data);
+        $note = Auth::user()->notes()->create($data);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('note_attachments', 'public');
+                $type = explode('/', $file->getMimeType())[0] === 'image' ? 'image' : 'pdf';
+                
+                $note->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $type,
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+        }
 
         return redirect()->route('notes.index');
     }
@@ -71,7 +85,7 @@ class NoteController extends Controller
         }
 
         return Inertia::render('Note/Edit', [
-            'note' => new NoteResource($note),
+            'note' => new NoteResource($note->load('attachments')),
             'subjects' => SubjectResource::collection(Auth::user()->subjects()->orderBy('name')->get()),
         ]);
     }
@@ -96,6 +110,28 @@ class NoteController extends Controller
 
         $note->update($data);
 
+        if ($request->filled('deleted_attachments')) {
+            $attachmentsToDelete = $note->attachments()->whereIn('id', $request->deleted_attachments)->get();
+            foreach ($attachmentsToDelete as $attachment) {
+                Storage::disk('public')->delete($attachment->file_path);
+                $attachment->delete();
+            }
+        }
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('note_attachments', 'public');
+                $type = explode('/', $file->getMimeType())[0] === 'image' ? 'image' : 'pdf';
+                
+                $note->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $type,
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+        }
+
         return redirect()->route('notes.index');
     }
 
@@ -110,6 +146,10 @@ class NoteController extends Controller
 
         if ($note->image_path) {
             Storage::disk('public')->delete($note->image_path);
+        }
+
+        foreach ($note->attachments as $attachment) {
+            Storage::disk('public')->delete($attachment->file_path);
         }
 
         $note->delete();

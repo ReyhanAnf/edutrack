@@ -32,7 +32,11 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'is_admin' => $request->user()->hasAnyRole(['admin', 'super admin']),
+                    'roles' => $request->user()->roles->pluck('name'),
+                    'pending_friend_requests_count' => $request->user()->friendRequestsReceived()->count(),
+                ]) : null,
             ],
         ];
     }

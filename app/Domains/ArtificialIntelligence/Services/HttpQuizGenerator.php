@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class HttpQuizGenerator implements QuizGeneratorInterface
 {
-    public function generateFromContent(string $content, int $questionCount = 5): array
+    public function generateFromContent(string $content, int $questionCount = 5, array $attachments = []): array
     {
         $defaultProvider = config('ai.default');
         $apiKey = config("ai.providers.$defaultProvider.key");
@@ -25,7 +25,7 @@ class HttpQuizGenerator implements QuizGeneratorInterface
         - 'explanation': Brief explanation of the correct answer.";
 
         $response = \Laravel\Ai\agent($systemPrompt)
-            ->prompt("Content: $content");
+            ->prompt("Content: $content", $attachments);
 
         $text = (string) $response;
         

@@ -5,6 +5,7 @@ import { PageProps } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import AuthModal from '@/Components/AuthModal';
 
 interface Subject {
     id: number;
@@ -23,6 +24,7 @@ interface Answer {
     user: {
         id: number;
         name: string;
+        profile_photo_url: string;
     };
 }
 
@@ -42,6 +44,7 @@ interface Question {
     user: {
         id: number;
         name: string;
+        profile_photo_url: string;
     };
     subject?: Subject | null;
     answers?: Answer[] | {
@@ -73,6 +76,7 @@ export default function Show({ auth, question }: Props) {
     const [questionStatus, setQuestionStatus] = useState<Question['status']>(item.status);
     const [brainliestAnswerId, setBrainliestAnswerId] = useState<number | null>(item.brainliest_answer_id ?? null);
     const [showReactionPicker, setShowReactionPicker] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     const REACTIONS = [
         { type: 'icon', value: 'lightbulb', label: 'Genius' },
@@ -99,10 +103,13 @@ export default function Show({ auth, question }: Props) {
     };
 
     const markBrainliest = (answerId: number) => {
+        if (!auth.user) return setIsAuthModalOpen(true);
         router.patch(route('questions.answers.brainliest', [item.id, answerId]));
     };
 
     const toggleQuestionLike = () => {
+        if (!auth.user) return setIsAuthModalOpen(true);
+
         const previousLiked = questionLikedByViewer;
         const previousCount = questionLikesCount;
 
@@ -122,6 +129,8 @@ export default function Show({ auth, question }: Props) {
     };
 
     const toggleReaction = (reaction: string) => {
+        if (!auth.user) return setIsAuthModalOpen(true);
+
         const previousReaction = userReaction;
         const previousSummary = reactionsSummary;
         const isRemoving = userReaction === reaction;
@@ -154,6 +163,8 @@ export default function Show({ auth, question }: Props) {
     };
 
     const toggleAnswerLike = (answerId: number) => {
+        if (!auth.user) return setIsAuthModalOpen(true);
+
         const previousAnswers = answers;
 
         setAnswers(currentAnswers => currentAnswers.map(answer => {
@@ -187,7 +198,7 @@ export default function Show({ auth, question }: Props) {
             .catch(() => setAnswers(previousAnswers));
     };
 
-    const canChooseBrainliest = auth.user.id === item.user.id;
+    const canChooseBrainliest = auth.user && auth.user.id === item.user.id;
 
     useEffect(() => {
         setAnswers(sortAnswersByLikes(initialAnswers));
@@ -235,7 +246,7 @@ export default function Show({ auth, question }: Props) {
             );
         }).listen('.question.like.toggled', (event: { question: { id: number, likes_count: number }, user_id: number, liked: boolean }) => {
             setQuestionLikesCount(event.question.likes_count);
-            if (event.user_id === auth.user.id) {
+            if (auth.user && event.user_id === auth.user.id) {
                 setQuestionLikedByViewer(event.liked);
             }
         }).listen('.question.reaction.toggled', (event: { question_id: number, reactions: Record<string, number> }) => {
@@ -248,7 +259,7 @@ export default function Show({ auth, question }: Props) {
                             ? {
                                 ...answer,
                                 likes_count: event.answer.likes_count,
-                                liked_by_viewer: event.user_id === auth.user.id ? event.liked : answer.liked_by_viewer,
+                                liked_by_viewer: auth.user && event.user_id === auth.user.id ? event.liked : answer.liked_by_viewer,
                             }
                             : answer
                     )
@@ -301,11 +312,13 @@ export default function Show({ auth, question }: Props) {
                     
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 font-bold text-primary dark:bg-sky-900/30">
-                                {item.user.name.charAt(0).toUpperCase()}
-                            </div>
                             <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.user.name}</p>
+                                <Link 
+                                    href={route('users.show', item.user.id)}
+                                    className="text-sm font-bold text-gray-900 dark:text-gray-100 hover:text-primary transition-colors"
+                                >
+                                    {item.user.name}
+                                </Link>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Penanya</p>
                             </div>
                         </div>
@@ -322,9 +335,9 @@ export default function Show({ auth, question }: Props) {
                                 <span className={`material-symbols-outlined text-[14px] ${questionLikedByViewer ? 'fill-current' : ''}`}>arrow_upward</span>
                                 <span className="text-xs font-medium">{questionLikesCount} Dukung</span>
                             </button>
-                                                        <div className="relative">
+                            <div className="relative">
                                 <button
-                                    onClick={() => setShowReactionPicker(!showReactionPicker)}
+                                    onClick={() => auth.user ? setShowReactionPicker(!showReactionPicker) : setIsAuthModalOpen(true)}
                                     className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium transition-colors ${
                                         userReaction 
                                             ? 'bg-sky-50 text-primary dark:bg-sky-900/20' 
@@ -461,11 +474,13 @@ export default function Show({ auth, question }: Props) {
                         >
                             <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-700 pb-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                        {answer.user.name.charAt(0).toUpperCase()}
-                                    </div>
                                     <div>
-                                        <p className="font-semibold text-gray-900 dark:text-gray-100">{answer.user.name}</p>
+                                        <Link 
+                                            href={route('users.show', answer.user.id)}
+                                            className="font-bold text-gray-900 dark:text-gray-100 hover:text-primary transition-colors"
+                                        >
+                                            {answer.user.name}
+                                        </Link>
                                         <div className="mt-1 flex flex-wrap gap-2">
                                             {(answer.is_brainliest || brainliestAnswerId === answer.id) && (
                                                 <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
@@ -529,30 +544,44 @@ export default function Show({ auth, question }: Props) {
                         <span className="material-symbols-outlined text-primary">edit_square</span>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Bantu Jawab Pertanyaan Ini</h3>
                     </div>
-                    <form onSubmit={submit} className="space-y-4">
-                        <div>
-                            <textarea
-                                value={data.body}
-                                className="block w-full rounded-xl border-gray-300 transition-colors focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 resize-y p-4"
-                                rows={5}
-                                onChange={(event) => setData('body', event.target.value)}
-                                placeholder="Bagaimana cara menyelesaikan soal ini langkah demi langkah? ..."
-                                required
-                            />
-                            <InputError message={errors.body} className="mt-2" />
+                    {auth.user ? (
+                        <form onSubmit={submit} className="space-y-4">
+                            <div>
+                                <textarea
+                                    value={data.body}
+                                    className="block w-full rounded-xl border-gray-300 transition-colors focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 resize-y p-4"
+                                    rows={5}
+                                    onChange={(event) => setData('body', event.target.value)}
+                                    placeholder="Bagaimana cara menyelesaikan soal ini langkah demi langkah? ..."
+                                    required
+                                />
+                                <InputError message={errors.body} className="mt-2" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
+                                    Gunakan format yang sopan dan mudah dimengerti.
+                                </span>
+                                <PrimaryButton disabled={processing} className="flex items-center gap-2 px-5 p-3">
+                                    <span className="material-symbols-outlined text-[18px]">send</span>
+                                    Kirim Jawaban
+                                </PrimaryButton>
+                            </div>
+                        </form>
+                    ) : (
+                        <div className="text-center py-6">
+                            <span className="material-symbols-outlined text-4xl text-sky-500 mb-2">lock_person</span>
+                            <h4 className="text-gray-900 dark:text-gray-100 font-semibold mb-2">Akses Terbatas</h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Silakan masuk atau daftar terlebih dahulu untuk memberikan jawaban.</p>
+                            <div className="flex justify-center gap-3">
+                                <Link href={route('login')} className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-sky-600 transition-colors">Masuk</Link>
+                                <Link href={route('register')} className="px-5 py-2.5 bg-sky-50 text-primary text-sm font-semibold rounded-lg hover:bg-sky-100 transition-colors dark:bg-sky-900/30 dark:hover:bg-sky-900/50">Daftar</Link>
+                            </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
-                                Gunakan format yang sopan dan mudah dimengerti.
-                            </span>
-                            <PrimaryButton disabled={processing} className="flex items-center gap-2 px-5 p-3">
-                                <span className="material-symbols-outlined text-[18px]">send</span>
-                                Kirim Jawaban
-                            </PrimaryButton>
-                        </div>
-                    </form>
+                    )}
                 </section>
             </div>
+
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
         </AuthenticatedLayout>
     );
 }

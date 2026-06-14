@@ -28,6 +28,10 @@ class UpdateNoteRequest extends FormRequest
             'status' => 'required|in:In Progress,Completed',
             'is_favorite' => 'nullable|boolean',
             'image' => 'nullable|image|max:2048',
+            'attachments' => 'nullable|array|max:10',
+            'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:10240',
+            'deleted_attachments' => 'nullable|array',
+            'deleted_attachments.*' => 'integer|exists:note_attachments,id',
             'subject_id' => [
                 'nullable',
                 \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {

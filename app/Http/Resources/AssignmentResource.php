@@ -19,6 +19,7 @@ class AssignmentResource extends JsonResource
             'subject_id' => $this->subject_id,
             'subject' => new SubjectResource($this->whenLoaded('subject')),
             'title' => $this->title,
+            'description' => $this->description,
             'due_date' => $this->due_date->format('Y-m-d'),
             'status' => $this->status,
             'created_at' => $this->created_at,

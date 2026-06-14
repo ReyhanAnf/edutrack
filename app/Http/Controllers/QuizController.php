@@ -48,13 +48,58 @@ class QuizController extends Controller
         ]);
     }
 
-    public function finish(Quiz $quiz, \App\Domains\Gamification\Services\UserStreakService $streakService): \Illuminate\Http\JsonResponse
+    public function finish(Quiz $quiz, \Illuminate\Http\Request $request, \App\Domains\Gamification\Services\UserStreakService $streakService): \Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
         if ($user) {
             $streakService->recordActivity($user, 'quiz');
+            
+            $saveScore = $request->input('save_score', false);
+            if ($saveScore) {
+                $request->validate([
+                    'score' => 'required|integer',
+                    'total_questions' => 'required|integer',
+                ]);
+                
+                \App\Models\QuizAttempt::updateOrCreate(
+                    ['quiz_id' => $quiz->id, 'user_id' => $user->id],
+                    [
+                        'score' => $request->input('score'),
+                        'total_questions' => $request->input('total_questions'),
+                    ]
+                );
+            }
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function attempts(Quiz $quiz): Response
+    {
+        if ($quiz->user_id !== Auth::id()) {
+            abort(403, 'Hanya pembuat kuis yang dapat melihat daftar peserta.');
+        }
+
+        $attempts = \App\Models\QuizAttempt::with('user')
+            ->where('quiz_id', $quiz->id)
+            ->latest('updated_at')
+            ->get();
+
+        return Inertia::render('Quiz/Attempts', [
+            'quiz' => $quiz,
+            'attempts' => $attempts,
+        ]);
+    }
+
+    public function myScores(): Response
+    {
+        $attempts = \App\Models\QuizAttempt::with(['quiz.subject', 'quiz.user'])
+            ->where('user_id', Auth::id())
+            ->latest('updated_at')
+            ->get();
+
+        return Inertia::render('Quiz/MyScores', [
+            'attempts' => $attempts,
+        ]);
     }
 }

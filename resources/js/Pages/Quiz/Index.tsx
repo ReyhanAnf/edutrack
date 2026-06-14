@@ -259,12 +259,20 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                                     Mulai Kuis
                                 </Link>
                                 {quiz.user.name === auth.user.name && (
-                                    <button 
-                                        onClick={() => togglePublic(quiz.id)}
-                                        className="text-xs font-medium text-gray-500 hover:text-gray-700"
-                                    >
-                                        {quiz.is_public ? 'Jadikan Privat' : 'Bagikan ke Teman'}
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <Link 
+                                            href={route('quizzes.attempts', quiz.id)}
+                                            className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300"
+                                        >
+                                            Lihat Peserta
+                                        </Link>
+                                        <button 
+                                            onClick={() => togglePublic(quiz.id)}
+                                            className="text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                        >
+                                            {quiz.is_public ? 'Jadikan Privat' : 'Bagikan'}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>

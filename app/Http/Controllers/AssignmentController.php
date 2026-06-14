@@ -75,6 +75,15 @@ class AssignmentController extends Controller
         return redirect()->route('assignments.index');
     }
 
+    public function toggleStatus(Assignment $assignment): RedirectResponse
+    {
+        $assignment->update([
+            'status' => $assignment->status === 'Pending' ? 'Completed' : 'Pending'
+        ]);
+
+        return redirect()->back();
+    }
+
     /**
      * Remove the specified resource from storage.
      */

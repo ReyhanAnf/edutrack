@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
 interface Subject {
@@ -17,6 +17,7 @@ interface LeaderboardEntry {
     user: {
         id: number;
         name: string;
+        profile_photo_url: string;
     };
     global_subject: Subject;
 }
@@ -63,123 +64,151 @@ export default function Leaderboard({ auth, leaderboard, subjects, filters }: Pr
         <AuthenticatedLayout header="Leaderboard">
             <Head title="Leaderboard" />
 
-            <div className="mx-auto max-w-5xl space-y-6">
-                {/* Hero Section */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-sky-500 p-6 sm:p-10 shadow-lg text-white">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="text-center md:text-left">
-                            <h2 className="text-3xl sm:text-4xl font-extrabold flex items-center justify-center md:justify-start gap-3">
-                                <span className="material-symbols-outlined text-4xl sm:text-5xl text-yellow-300">trophy</span>
-                                Hall of Fame
-                            </h2>
-                            <p className="mt-3 text-indigo-100 max-w-xl text-sm sm:text-base">
-                                Bersaing dengan pelajar lainnya, peroleh XP tertinggi, dan raih gelar Grandmaster di mata pelajaran favoritmu!
-                            </p>
+            <div className="mx-auto max-w-4xl space-y-4 pb-28">
+                {/* Clean & Compact Hero Section */}
+                <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 bg-indigo-600 dark:bg-indigo-900 p-5 sm:p-6 rounded-xl shadow-sm text-white overflow-hidden">
+                    <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                        <div className="bg-white/20 p-2 sm:p-3 rounded-lg backdrop-blur-sm shrink-0">
+                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-yellow-300">trophy</span>
                         </div>
-                        <div className="shrink-0 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20 text-center w-full md:w-auto">
-                            <p className="text-indigo-100 text-xs sm:text-sm font-medium uppercase tracking-wider mb-1">XP Anda</p>
-                            <div className="text-3xl sm:text-4xl font-bold flex flex-wrap justify-center items-center gap-1">
-                                {leaderboard.filter(l => l.user_id === auth.user.id).reduce((acc, curr) => acc + curr.xp, 0)}
-                                <span className="text-lg text-yellow-300 material-symbols-outlined">bolt</span>
-                            </div>
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-xl sm:text-2xl font-bold truncate">Hall of Fame</h2>
+                            <p className="text-indigo-100 text-xs sm:text-sm mt-0.5 line-clamp-1">Peringkat XP tertinggi dari seluruh pelajar.</p>
+                        </div>
+                    </div>
+                    <div className="bg-white/10 px-4 py-2 sm:px-5 sm:py-3 rounded-lg backdrop-blur-sm border border-white/10 text-center sm:text-right shrink-0 w-full sm:w-auto min-w-[140px]">
+                        <p className="text-indigo-200 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-0.5">Total XP Anda</p>
+                        <div className="text-xl sm:text-2xl font-bold flex items-center justify-center sm:justify-end gap-1">
+                            {leaderboard.filter(l => l.user_id === auth.user.id).reduce((acc, curr) => acc + curr.xp, 0).toLocaleString()}
+                            <span className="text-yellow-300 material-symbols-outlined text-lg sm:text-xl">bolt</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
-                    {/* Controls */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <div>
+                <div className="space-y-6 mt-6">
+                    {/* Controls (Tabs) */}
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between px-1 sm:px-2">
                             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Top Rankers</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Peringkat 50 teratas dari seluruh pelajar</p>
                         </div>
                         
-                        <div className="w-full sm:w-64 shrink-0 relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">filter_list</span>
-                            <select
-                                value={filters.subject_id || ''}
-                                onChange={handleSubjectChange}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-gray-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 transition-colors"
-                            >
-                                <option value="">🏆 Semua Mata Pelajaran</option>
-                                {subjects.map((subject) => (
-                                    <option key={subject.id} value={subject.id}>
-                                        {subject.name}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="w-full overflow-x-auto hide-scrollbar border-b border-gray-200 dark:border-gray-700" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            <div className="flex w-max px-1 sm:px-2">
+                                <button
+                                    onClick={() => router.get(route('leaderboard.index'), {}, { preserveState: true })}
+                                    className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                                        !filters.subject_id 
+                                        ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' 
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                                >
+                                    🏆 Semua Kategori
+                                </button>
+                                {subjects.map((subject) => {
+                                    const isActive = filters.subject_id == subject.id.toString();
+                                    return (
+                                        <button
+                                            key={subject.id}
+                                            onClick={() => router.get(route('leaderboard.index'), { subject_id: subject.id }, { preserveState: true })}
+                                            className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors flex items-center gap-2 ${
+                                                isActive
+                                                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                            }`}
+                                        >
+                                            <span 
+                                                className="inline-block w-2 h-2 rounded-full"
+                                                style={{ backgroundColor: subject.color_code }}
+                                            ></span>
+                                            {subject.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Leaderboard List */}
-                    <div className="space-y-3">
+                    {/* Compact List Section */}
+                    <div className="space-y-2">
                         {leaderboard.length === 0 ? (
-                            <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-                                <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-3">sports_score</span>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Belum Ada Peringkat</h3>
-                                <p className="text-gray-500 dark:text-gray-400 mt-1">Jadilah yang pertama untuk mencapai top rank!</p>
+                            <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+                                <span className="material-symbols-outlined text-4xl text-gray-400 dark:text-gray-600 mb-2">sports_score</span>
+                                <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">Belum Ada Peringkat</h3>
                             </div>
                         ) : (
-                            leaderboard.map((entry, index) => (
-                                <div 
-                                    key={entry.id}
-                                    className={`flex items-center p-4 sm:p-5 rounded-2xl border transition-all ${
-                                        entry.user_id === auth.user.id 
-                                        ? 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-900/10 dark:border-indigo-800' 
-                                        : 'bg-white border-gray-100 hover:border-indigo-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-center w-10 sm:w-14 shrink-0">
-                                        {index === 0 ? (
-                                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-yellow-400 drop-shadow-sm">social_leaderboard</span>
-                                        ) : index === 1 ? (
-                                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-gray-300 drop-shadow-sm">social_leaderboard</span>
-                                        ) : index === 2 ? (
-                                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-amber-600 drop-shadow-sm">social_leaderboard</span>
-                                        ) : (
-                                            <span className="text-lg sm:text-xl font-bold text-gray-400 dark:text-gray-500">#{index + 1}</span>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 px-2 sm:px-4">
-                                        <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 font-bold text-indigo-700 dark:from-indigo-900/50 dark:to-purple-900/50 dark:text-indigo-300 border border-white dark:border-gray-700 shadow-sm">
-                                            {entry.user.name.charAt(0).toUpperCase()}
+                            leaderboard.map((entry, index) => {
+                                const isFirst = index === 0;
+                                const isSecond = index === 1;
+                                const isThird = index === 2;
+                                const isTop3 = isFirst || isSecond || isThird;
+                                
+                                let bgClass = entry.user_id === auth.user.id 
+                                    ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800' 
+                                    : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50';
+
+                                if (isFirst && entry.user_id !== auth.user.id) bgClass = 'bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30';
+                                else if (isSecond && entry.user_id !== auth.user.id) bgClass = 'bg-slate-50 dark:bg-slate-800/30 border-slate-200/50 dark:border-slate-700/50';
+                                else if (isThird && entry.user_id !== auth.user.id) bgClass = 'bg-orange-50/30 dark:bg-orange-900/10 border-orange-200/50 dark:border-orange-800/30';
+
+                                return (
+                                    <div 
+                                        key={entry.id}
+                                        className={`flex items-center p-3 rounded-lg border ${bgClass}`}
+                                    >
+                                        <div className="flex items-center justify-center w-10 shrink-0">
+                                            {isFirst ? (
+                                                <span className="material-symbols-outlined text-2xl text-yellow-500">workspace_premium</span>
+                                            ) : isSecond ? (
+                                                <span className="material-symbols-outlined text-2xl text-slate-400">military_tech</span>
+                                            ) : isThird ? (
+                                                <span className="material-symbols-outlined text-2xl text-orange-400">military_tech</span>
+                                            ) : (
+                                                <span className="text-sm font-bold text-gray-400 dark:text-gray-500">{index + 1}</span>
+                                            )}
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-gray-900 dark:text-gray-100 truncate flex items-center gap-2 text-sm sm:text-base">
-                                                {entry.user.name}
-                                                {entry.user_id === auth.user.id && (
-                                                    <span className="inline-flex text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold dark:bg-indigo-900/50 dark:text-indigo-300">YOU</span>
-                                                )}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span 
-                                                    className="inline-flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold ring-1 ring-inset"
-                                                    style={{ 
-                                                        backgroundColor: `${entry.global_subject?.color_code || '#3b82f6'}15`,
-                                                        color: entry.global_subject?.color_code || '#3b82f6',
-                                                        borderColor: `${entry.global_subject?.color_code || '#3b82f6'}30`
-                                                    }}
-                                                >
-                                                    {entry.global_subject?.name || 'Mata Pelajaran'}
-                                                </span>
-                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset uppercase tracking-wider ${getTierColor(entry.tier)}`}>
-                                                    <span className="material-symbols-outlined text-[12px]">{getTierIcon(entry.tier)}</span>
-                                                    {entry.tier}
-                                                </span>
+                                        
+                                        <div className="flex items-center gap-3 flex-1 min-w-0 px-2 sm:px-4 border-l border-gray-100 dark:border-gray-700 ml-2">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Link 
+                                                        href={route('users.show', entry.user.id)}
+                                                        className="font-bold text-gray-900 dark:text-gray-100 text-sm truncate hover:text-primary transition-colors"
+                                                    >
+                                                        {entry.user.name}
+                                                    </Link>
+                                                    {entry.user_id === auth.user.id && (
+                                                        <span className="shrink-0 text-[9px] bg-indigo-500 text-white px-1.5 py-0.5 rounded font-bold">YOU</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                                    <span 
+                                                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
+                                                        style={{ 
+                                                            backgroundColor: `${entry.global_subject?.color_code || '#3b82f6'}15`,
+                                                            color: entry.global_subject?.color_code || '#3b82f6'
+                                                        }}
+                                                    >
+                                                        <span className="truncate max-w-[120px]">{entry.global_subject?.name || 'Mata Pelajaran'}</span>
+                                                    </span>
+                                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${getTierColor(entry.tier)} border-none ring-0`}>
+                                                        <span className="material-symbols-outlined text-[10px]">{getTierIcon(entry.tier)}</span>
+                                                        {entry.tier}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-end shrink-0 ml-2 min-w-[80px]">
+                                            <div className="text-right">
+                                                <div className="flex items-center justify-end gap-0.5 font-bold text-base text-gray-900 dark:text-gray-100">
+                                                    {entry.xp.toLocaleString()}
+                                                    <span className="material-symbols-outlined text-yellow-400 text-lg">bolt</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="flex flex-col items-end justify-center shrink-0">
-                                        <div className="flex items-center gap-1 sm:gap-1.5 font-bold text-lg sm:text-2xl text-gray-900 dark:text-gray-100">
-                                            {entry.xp.toLocaleString()}
-                                            <span className="material-symbols-outlined text-yellow-400 text-xl sm:text-2xl">bolt</span>
-                                        </div>
-                                        <span className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wider">XP Point</span>
-                                    </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>

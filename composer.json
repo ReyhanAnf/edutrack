@@ -15,6 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
+        "spatie/laravel-permission": "^8.0",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
@@ -56,6 +57,14 @@
         "dev-local": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#86efac,#fdba74\" \"php artisan serve --host=0.0.0.0 --port=8000\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan reverb:start --host=0.0.0.0 --port=8080\" \"npm run dev -- --host\" --names=server,queue,reverb,vite --kill-others"
+        ],
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#86efac\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan reverb:start\" --names=server,queue,reverb --kill-others"
+        ],
+        "start-local": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#86efac\" \"php artisan serve --host=0.0.0.0 --port=8000\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan reverb:start --host=0.0.0.0 --port=8080\" --names=server,queue,reverb --kill-others"
         ],
         "test": [
             "@php artisan config:clear --ansi",

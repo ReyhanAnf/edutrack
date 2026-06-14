@@ -29,6 +29,7 @@ export default function Show({ quiz }: Props) {
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [score, setScore] = useState(0);
+    const [showSavePrompt, setShowSavePrompt] = useState(false);
     const [showResults, setShowResults] = useState(false);
 
     const questions = quiz.questions;
@@ -54,46 +55,81 @@ export default function Show({ quiz }: Props) {
             setSelectedOption(null);
             setIsSubmitted(false);
         } else {
-            // Hit backend to mark quiz as finished for gamification streak
-            axios.post(route('quizzes.finish', quiz.id)).catch(err => console.error(err));
-            setShowResults(true);
+            setShowSavePrompt(true);
         }
     };
+
+    const handleSavePrompt = (save: boolean) => {
+        axios.post(route('quizzes.finish', quiz.id), {
+            save_score: save,
+            score: score,
+            total_questions: questions.length
+        }).catch(err => console.error(err));
+        
+        setShowSavePrompt(false);
+        setShowResults(true);
+    };
+
+    if (showSavePrompt) {
+        return (
+            <AuthenticatedLayout header="Simpan Hasil Kuis">
+                <Head title="Simpan Hasil" />
+                <div className="mx-auto max-w-xl mt-12 text-center space-y-6 px-4">
+                    <div className="bg-white p-8 rounded-2xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+                        <span className="material-symbols-outlined text-6xl text-sky-500 mb-4">save</span>
+                        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Simpan Hasil Kuis?</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-8">
+                            Apakah Anda ingin menyimpan skor ini ke dalam Menu Nilai Anda sebagai bahan evaluasi?
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button 
+                                onClick={() => handleSavePrompt(false)}
+                                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                            >
+                                Tidak, Lewati Saja
+                            </button>
+                            <button 
+                                onClick={() => handleSavePrompt(true)}
+                                className="px-6 py-2.5 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 shadow-sm transition-colors"
+                            >
+                                Ya, Simpan Skor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </AuthenticatedLayout>
+        );
+    }
 
     if (showResults) {
         return (
             <AuthenticatedLayout header="Hasil Kuis">
                 <Head title="Hasil Kuis" />
-                <div className="mx-auto max-w-2xl text-center space-y-6">
+                <div className="mx-auto max-w-2xl mt-8 text-center space-y-6 px-4">
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                         <span className="material-symbols-outlined text-6xl text-yellow-500 mb-4">emoji_events</span>
                         <h2 className="text-2xl font-bold mb-2">Kuis Selesai!</h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-6">Kamu berhasil menyelesaikan {quiz.title}</p>
                         
-                        <div className="text-5xl font-black text-primary mb-2">
+                        <div className="text-5xl font-black text-sky-500 mb-2">
                             {Math.round((score / questions.length) * 100)}%
                         </div>
                         <p className="text-lg font-medium">Skor: {score} / {questions.length}</p>
 
-                        <div className="mt-8 flex gap-4 justify-center">
+                        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                             <Link 
                                 href={route('quizzes.index')}
-                                className="px-6 py-2 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                                className="px-6 py-2.5 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
                             >
-                                Kembali
+                                Kembali ke Daftar Kuis
                             </Link>
-                            <button 
-                                onClick={() => {
-                                    setCurrentStep(0);
-                                    setScore(0);
-                                    setShowResults(false);
-                                    setIsSubmitted(false);
-                                    setSelectedOption(null);
-                                }}
-                                className="px-6 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-sky-600 transition-colors"
+                            <Link 
+                                href={route('quizzes.my-scores')}
+                                className="px-6 py-2.5 bg-sky-50 text-sky-600 rounded-xl font-semibold border border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800 dark:hover:bg-sky-900/50 transition-colors"
                             >
-                                Ulangi Kuis
-                            </button>
+                                Lihat Menu Nilai
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -105,7 +141,7 @@ export default function Show({ quiz }: Props) {
         <AuthenticatedLayout header={quiz.title}>
             <Head title={quiz.title} />
 
-            <div className="mx-auto max-w-3xl space-y-6">
+            <div className="mx-auto max-w-3xl space-y-6 px-4">
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
                          <span 
@@ -121,12 +157,12 @@ export default function Show({ quiz }: Props) {
 
                 <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                     <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-300" 
+                        className="bg-sky-500 h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
                     />
                 </div>
 
-                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
                     <h2 className="text-xl font-bold mb-8">{currentQuestion.question_text}</h2>
 
                     <div className="space-y-3">
@@ -143,7 +179,7 @@ export default function Show({ quiz }: Props) {
                                 }
                             } else {
                                 if (index === selectedOption) {
-                                    optionClass += "border-primary bg-sky-50 dark:bg-sky-900/20 text-primary";
+                                    optionClass += "border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400";
                                 } else {
                                     optionClass += "border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600";
                                 }
@@ -170,7 +206,7 @@ export default function Show({ quiz }: Props) {
                     {isSubmitted && (
                         <div className="mt-8 p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
                             <h4 className="font-bold mb-1 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">info</span>
+                                <span className="material-symbols-outlined text-sm text-sky-500">info</span>
                                 Penjelasan:
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{currentQuestion.explanation || 'Tidak ada penjelasan tambahan.'}</p>
@@ -182,14 +218,14 @@ export default function Show({ quiz }: Props) {
                             <button
                                 onClick={submitAnswer}
                                 disabled={selectedOption === null}
-                                className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-sky-600 transition-colors disabled:opacity-50"
+                                className="px-8 py-2.5 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 transition-colors disabled:opacity-50"
                             >
                                 Periksa Jawaban
                             </button>
                         ) : (
                             <button
                                 onClick={nextQuestion}
-                                className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-sky-600 transition-colors flex items-center gap-2"
+                                className="px-8 py-2.5 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 transition-colors flex items-center gap-2"
                             >
                                 {currentStep < questions.length - 1 ? 'Pertanyaan Berikutnya' : 'Lihat Hasil'}
                                 <span className="material-symbols-outlined">arrow_forward</span>

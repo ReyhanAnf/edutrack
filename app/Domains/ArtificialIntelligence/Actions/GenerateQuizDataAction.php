@@ -7,6 +7,7 @@ use App\Models\Grade;
 use App\Models\Note;
 use App\Models\Question;
 use App\Models\Subject;
+use Illuminate\Support\Facades\Storage;
 
 class GenerateQuizDataAction
 {
@@ -27,7 +28,7 @@ class GenerateQuizDataAction
             $notesQuery->where('subject_id', $subjectId);
         }
 
-        $notes = $notesQuery->latest()
+        $notes = $notesQuery->with('attachments')->latest()
             ->limit(!empty($noteIds) ? count($noteIds) : 5)
             ->get();
 
@@ -48,8 +49,15 @@ class GenerateQuizDataAction
             $context .= "Use the following context materials (if any) to fulfill the above request:\n\n";
         }
 
+        $attachments = [];
         foreach ($notes as $note) {
             $context .= "Note: {$note->title}\n{$note->content}\n\n";
+            if ($note->image_path) {
+                $attachments[] = Storage::disk('public')->path($note->image_path);
+            }
+            foreach ($note->attachments as $attachment) {
+                $attachments[] = Storage::disk('public')->path($attachment->file_path);
+            }
         }
 
         foreach ($questions as $question) {
@@ -67,7 +75,7 @@ class GenerateQuizDataAction
             $isDiagnostic = true;
         }
 
-        $questionsData = $this->generator->generateFromContent($context, $count);
+        $questionsData = $this->generator->generateFromContent($context, $count, $attachments);
 
         if ($isDiagnostic && !empty($questionsData)) {
             foreach ($questionsData as &$q) {

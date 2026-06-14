@@ -14,6 +14,7 @@ class Assignment extends Model
         'user_id',
         'subject_id',
         'title',
+        'description',
         'due_date',
         'status',
     ];

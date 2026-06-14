@@ -12,8 +12,8 @@ export default defineConfig({
         react(),
         VitePWA({
             registerType: 'autoUpdate',
-            outDir: 'public/build',
-            buildBase: '/build/',
+            outDir: 'public',
+            buildBase: '/',
             manifest: {
                 name: 'EduTrack - AI Learning Network',
                 short_name: 'EduTrack',
@@ -21,6 +21,7 @@ export default defineConfig({
                 theme_color: '#ffffff',
                 background_color: '#ffffff',
                 display: 'standalone',
+                start_url: '/',
                 icons: [
                     {
                         src: '/logo.png', // Temporary, user can update this later

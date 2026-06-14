@@ -21,6 +21,7 @@ interface Note {
     status: string;
     is_favorite: boolean;
     created_at: string;
+    attachments?: { id: number; file_url: string; file_name: string; file_type: string; file_size: number }[];
 }
 
 interface Props extends PageProps {
@@ -117,13 +118,43 @@ export default function Index({ auth, notes }: Props) {
                                 {note.content}
                             </p>
 
-                            {note.image_url && (
-                                <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 h-32">
-                                    <img 
-                                        src={note.image_url} 
-                                        alt={note.title} 
-                                        className="w-full h-full object-cover"
-                                    />
+                            {/* Images Gallery */}
+                            {(note.image_url || (note.attachments && note.attachments.some(a => a.file_type === 'image'))) && (
+                                <div className="mt-4 grid grid-cols-2 gap-2">
+                                    {note.image_url && (
+                                        <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 h-32 col-span-2">
+                                            <img src={note.image_url} alt={note.title} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    {note.attachments?.filter(a => a.file_type === 'image').slice(0, 4).map((img, i, arr) => (
+                                        <div key={img.id} className={`rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 h-24 ${arr.length === 1 && !note.image_url ? 'col-span-2 h-32' : ''} relative`}>
+                                            <img src={img.file_url} alt={img.file_name} className="w-full h-full object-cover" />
+                                            {i === 3 && note.attachments!.filter(a => a.file_type === 'image').length > 4 && (
+                                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                    <span className="text-white font-bold text-lg">+{note.attachments!.filter(a => a.file_type === 'image').length - 4}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* PDF Links */}
+                            {note.attachments && note.attachments.some(a => a.file_type === 'pdf') && (
+                                <div className="mt-4 space-y-2">
+                                    {note.attachments.filter(a => a.file_type === 'pdf').map(pdf => (
+                                        <a 
+                                            key={pdf.id} 
+                                            href={pdf.file_url} 
+                                            target="_blank" 
+                                            rel="noreferrer"
+                                            className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors group"
+                                        >
+                                            <span className="material-symbols-outlined text-red-500">picture_as_pdf</span>
+                                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-red-600 dark:group-hover:text-red-400">{pdf.file_name}</span>
+                                            <span className="text-[10px] text-gray-500 shrink-0">{(pdf.file_size / 1024 / 1024).toFixed(1)} MB</span>
+                                        </a>
+                                    ))}
                                 </div>
                             )}
                         </div>

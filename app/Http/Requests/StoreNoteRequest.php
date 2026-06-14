@@ -27,7 +27,9 @@ class StoreNoteRequest extends FormRequest
             'content' => 'required|string',
             'status' => 'required|in:In Progress,Completed',
             'is_favorite' => 'nullable|boolean',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:2048', // Keep for backwards compatibility
+            'attachments' => 'nullable|array|max:10', // Max 10 attachments
+            'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:10240', // Max 10MB per file
             'subject_id' => [
                 'nullable',
                 \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {

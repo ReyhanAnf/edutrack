@@ -22,6 +22,7 @@ export default function Create({ auth, subjects }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         subject_id: '',
         title: '',
+        description: '',
         due_date: '',
         status: 'Pending',
     });
@@ -83,43 +84,59 @@ export default function Create({ auth, subjects }: Props) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="due_date" value="Tenggat Waktu" />
-                                <TextInput
-                                    id="due_date"
-                                    type="date"
-                                    name="due_date"
-                                    value={data.due_date}
-                                    className="mt-1 block w-full"
-                                    onChange={(e) => setData('due_date', e.target.value)}
-                                    required
-                                />
-                                <InputError message={errors.due_date} className="mt-2" />
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="status" value="Status" />
-                                <select
-                                    id="status"
-                                    name="status"
-                                    value={data.status}
+                                <InputLabel htmlFor="description" value="Deskripsi Tugas (Opsional)" />
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    value={data.description}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:focus:border-sky-600 dark:focus:ring-sky-600 transition-colors"
-                                    onChange={(e) => setData('status', e.target.value as 'Pending' | 'Completed')}
-                                    required
-                                >
-                                    <option value="Pending">Belum Selesai</option>
-                                    <option value="Completed">Selesai</option>
-                                </select>
-                                <InputError message={errors.status} className="mt-2" />
+                                    rows={4}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    placeholder="Berikan detail tugas, instruksi, atau catatan penting lainnya..."
+                                />
+                                <InputError message={errors.description} className="mt-2" />
                             </div>
 
-                            <div className="flex items-center justify-end gap-4 pt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <InputLabel htmlFor="due_date" value="Tenggat Waktu" />
+                                    <TextInput
+                                        id="due_date"
+                                        type="date"
+                                        name="due_date"
+                                        value={data.due_date}
+                                        className="mt-1 block w-full"
+                                        onChange={(e) => setData('due_date', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.due_date} className="mt-2" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="status" value="Status" />
+                                    <select
+                                        id="status"
+                                        name="status"
+                                        value={data.status}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:focus:border-sky-600 dark:focus:ring-sky-600 transition-colors"
+                                        onChange={(e) => setData('status', e.target.value as 'Pending' | 'Completed')}
+                                        required
+                                    >
+                                        <option value="Pending">Belum Selesai</option>
+                                        <option value="Completed">Selesai</option>
+                                    </select>
+                                    <InputError message={errors.status} className="mt-2" />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <Link
                                     href={route('assignments.index')}
                                     className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                                 >
                                     Batal
                                 </Link>
-                                <PrimaryButton disabled={processing}>
+                                <PrimaryButton disabled={processing} className="px-8">
                                     Simpan Tugas
                                 </PrimaryButton>
                             </div>

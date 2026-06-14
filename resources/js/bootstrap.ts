@@ -21,7 +21,7 @@ if (isProduction || usePusherAtLocal) {
         wssPort: import.meta.env.VITE_PUSHER_PORT ? Number(import.meta.env.VITE_PUSHER_PORT) : 443,
         forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
         enabledTransports: ['ws', 'wss'],
-    });
+    }) as any;
 } else {
     window.Echo = new Echo({
         broadcaster: 'reverb',
@@ -31,5 +31,5 @@ if (isProduction || usePusherAtLocal) {
         wssPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
         forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
         enabledTransports: ['ws', 'wss'],
-    });
+    }) as any;
 }

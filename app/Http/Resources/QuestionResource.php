@@ -35,6 +35,7 @@ class QuestionResource extends JsonResource
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
+                'profile_photo_url' => $this->user?->profile_photo_url,
             ],
             'subject' => new SubjectResource($this->whenLoaded('subject')),
             'answers' => $this->whenLoaded('answers', fn () => AnswerResource::collection($this->answers)->resolve()),
