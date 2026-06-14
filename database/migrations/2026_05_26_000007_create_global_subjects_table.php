@@ -50,6 +50,14 @@ return new class extends Migration
             } catch (Exception $e) {
             }
 
+            // Drop foreign key if exists
+            try {
+                Schema::table('user_subject_exps', function (Blueprint $table) {
+                    $table->dropForeign(['subject_id']);
+                });
+            } catch (Exception $e) {
+            }
+
             // Drop subject_id column if exists
             if (Schema::hasColumn('user_subject_exps', 'subject_id')) {
                 DB::statement('ALTER TABLE user_subject_exps DROP COLUMN subject_id');
