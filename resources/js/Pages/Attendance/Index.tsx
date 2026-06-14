@@ -35,6 +35,18 @@ interface Props extends PageProps {
     };
     activity_stats: Record<string, number>;
     missions: Mission[];
+    current_streak: number;
+    today_streak: {
+        status: 'none' | 'half' | 'full';
+        qna_done: boolean;
+        quiz_done: boolean;
+    } | null;
+    pending_recovery: {
+        id: number;
+        recovery_type: 'half_missed' | 'full_missed';
+        quizzes_required: number;
+        quizzes_completed: number;
+    } | null;
 }
 
 const getActivityColor = (count: number) => {
@@ -68,10 +80,15 @@ const parseDate = (value: string) => {
     return new Date(value);
 };
 
-export default function Index({ auth, attendances, activity_stats, missions }: Props) {
+export default function Index({ auth, attendances, activity_stats, missions, current_streak, today_streak, pending_recovery }: Props) {
     const { delete: destroy, processing } = useForm();
+    const { post: postRecovery, processing: recovering } = useForm();
     const [isConfirming, setIsConfirming] = useState(false);
     const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const handleRecovery = () => {
+        postRecovery(route('attendances.recover-streak'));
+    };
 
     const handleDelete = (id: number) => {
         setDeleteId(id);
@@ -129,6 +146,110 @@ export default function Index({ auth, attendances, activity_stats, missions }: P
             <Head title="Statistik Aktivitas" />
 
             <div className="w-full space-y-8">
+                {/* Pending Recovery Alert */}
+                {pending_recovery && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-3xl p-6 dark:bg-rose-900/20 dark:border-rose-900 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-4xl text-rose-500">heart_broken</span>
+                            <div>
+                                <h3 className="text-rose-800 dark:text-rose-200 font-bold text-lg">Ups, Streak Kamu Putus!</h3>
+                                <p className="text-rose-600 dark:text-rose-300 text-sm">
+                                    Segera pulihkan streak kamu sebelum hangus! Kamu bisa membayar dengan Poin Streak atau kerjakan {pending_recovery.quizzes_required} Kuis.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2 min-w-[200px]">
+                            <button 
+                                onClick={handleRecovery}
+                                disabled={recovering}
+                                className="w-full bg-rose-600 text-white rounded-xl px-4 py-2 font-bold hover:bg-rose-700 transition-colors disabled:opacity-50"
+                            >
+                                Pulihkan dengan Poin
+                            </button>
+                            <div className="text-center text-xs text-rose-600 font-medium">
+                                Atau {pending_recovery.quizzes_completed}/{pending_recovery.quizzes_required} Kuis Selesai
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Gamification Streak Fire Dashboard */}
+                <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-sky-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                        <div>
+                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <span className="material-symbols-outlined text-orange-500">local_fire_department</span>
+                                Hari ke-{current_streak}!
+                            </h2>
+                            <p className="text-gray-500 text-sm mb-4">
+                                Terus pertahankan api belajarmu. Dapatkan 1000 XP setiap 5 hari beruntun!
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                                    today_streak?.qna_done 
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800/30 dark:text-emerald-400' 
+                                        : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700'
+                                }`}>
+                                    <span className="material-symbols-outlined text-[18px]">
+                                        {today_streak?.qna_done ? 'check_circle' : 'radio_button_unchecked'}
+                                    </span>
+                                    Interaksi Forum
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                                    today_streak?.quiz_done 
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800/30 dark:text-emerald-400' 
+                                        : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700'
+                                }`}>
+                                    <span className="material-symbols-outlined text-[18px]">
+                                        {today_streak?.quiz_done ? 'check_circle' : 'radio_button_unchecked'}
+                                    </span>
+                                    Selesaikan Kuis
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 p-3 rounded-2xl">
+                            {[1, 2, 3, 4, 5].map((idx) => {
+                                const isCurrentDay = current_streak % 5 === idx - 1;
+                                const isPassed = current_streak % 5 > idx - 1;
+                                
+                                let fireIcon = 'local_fire_department';
+                                let fireColor = 'text-gray-300 dark:text-gray-600'; // Default mati
+                                let fireBg = 'bg-white dark:bg-gray-800';
+                                
+                                if (isPassed) {
+                                    // Sudah full fire sebelumnya
+                                    fireColor = 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]';
+                                    fireBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/30';
+                                } else if (isCurrentDay) {
+                                    // Status hari ini
+                                    if (today_streak?.status === 'full') {
+                                        fireColor = 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]';
+                                        fireBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/30';
+                                    } else if (today_streak?.status === 'half') {
+                                        fireColor = 'text-amber-400 opacity-90 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]';
+                                        fireBg = 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/30';
+                                    } else {
+                                        // Belum ada api hari ini tapi dia sedang aktif di frame ini
+                                        fireBg = 'bg-white border-sky-200 dark:bg-gray-800 dark:border-sky-800/50 shadow-inner';
+                                    }
+                                }
+
+                                return (
+                                    <div key={idx} className="flex flex-col items-center gap-1">
+                                        <div className={`w-12 h-12 flex items-center justify-center rounded-xl border ${fireBg} ${isCurrentDay ? 'ring-2 ring-sky-200 dark:ring-sky-800/50 scale-110' : 'border-gray-100 dark:border-gray-700'}`}>
+                                            <span className={`material-symbols-outlined text-3xl transition-all duration-300 ${fireColor}`}>
+                                                {fireIcon}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-3xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Gamification\Services\UserStreakService;
 use App\Domains\QuestionAnswer\Services\QuestionWorkflowService;
 use App\Events\QuestionUpdated;
 use App\Http\Requests\StoreQuestionRequest;
@@ -17,8 +18,10 @@ use Inertia\Response;
 
 class QuestionController extends Controller
 {
-    public function index(): Response
+    public function index(UserStreakService $streakService): Response
     {
+        $user = Auth::user();
+
         $questions = Question::query()
             ->with(['user', 'subject', 'reactions'])
             ->withCount('answers')
@@ -38,6 +41,10 @@ class QuestionController extends Controller
         return Inertia::render('Question/Index', [
             'questions' => QuestionResource::collection($questions),
             'subjects' => SubjectResource::collection(Auth::user()->subjects()->orderBy('name')->get()),
+            'current_streak' => $streakService->getConsecutiveStreaks($user),
+            'today_streak' => \App\Models\UserDailyStreak::where('user_id', $user->id)
+                                ->where('date', \Carbon\Carbon::today()->toDateString())
+                                ->first()?->toArray(),
         ]);
     }
 

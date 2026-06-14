@@ -22,9 +22,16 @@ class QuizController extends Controller
             ->latest()
             ->get();
 
+        $notes = \App\Models\Note::with('subject:id,name,color_code')
+            ->where('user_id', $userId)
+            ->select('id', 'title', 'subject_id', 'created_at')
+            ->latest()
+            ->get();
+
         return Inertia::render('Quiz/Index', [
             'quizzes' => $quizzes,
             'subjects' => SubjectResource::collection(Auth::user()->subjects()->orderBy('name')->get()),
+            'notes' => $notes,
         ]);
     }
 
@@ -39,5 +46,15 @@ class QuizController extends Controller
         return Inertia::render('Quiz/Show', [
             'quiz' => $quiz,
         ]);
+    }
+
+    public function finish(Quiz $quiz, \App\Domains\Gamification\Services\UserStreakService $streakService): \Illuminate\Http\JsonResponse
+    {
+        $user = Auth::user();
+        if ($user) {
+            $streakService->recordActivity($user, 'quiz');
+        }
+
+        return response()->json(['success' => true]);
     }
 }

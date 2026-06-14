@@ -15,7 +15,7 @@ class DashboardController extends Controller
     /**
      * Menampilkan dasbor aplikasi.
      */
-    public function index()
+    public function index(\App\Domains\Gamification\Services\UserStreakService $streakService)
     {
         $user = Auth::user();
 
@@ -41,6 +41,10 @@ class DashboardController extends Controller
                 'pendingAssignments' => $pendingAssignments,
                 'todaysSchedule' => $todaysSchedule,
             ],
+            'current_streak' => $streakService->getConsecutiveStreaks($user),
+            'today_streak' => \App\Models\UserDailyStreak::where('user_id', $user->id)
+                                ->where('date', \Carbon\Carbon::today()->toDateString())
+                                ->first()?->toArray(),
         ]);
     }
 }

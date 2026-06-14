@@ -12,25 +12,51 @@ class GenerateStepByStepHintAction
     {
         $subjectName = $question->subject?->name ?? 'this subject';
         
-        $systemPrompt = "You are an expert tutor in $subjectName. 
-        When a student asks a question, do NOT give the direct answer. 
-        Instead, provide 3-4 progressive hints that help the student arrive at the answer themselves.
-        Format your response as a clear, step-by-step guide with 'Hint 1', 'Hint 2', etc.
-        If the question is unclear, ask clarifying questions instead.";
+        $systemPrompt = "Kamu adalah tutor ahli dalam mata pelajaran $subjectName. 
+        Saat siswa bertanya, JANGAN berikan jawaban langsung. 
+        Sebaliknya, berikan 3-4 petunjuk bertahap yang membantu siswa menemukan jawabannya sendiri.
+        Format responsmu dengan rapi menggunakan langkah-langkah seperti 'Petunjuk 1', 'Petunjuk 2', dll.
+        Jika pertanyaannya kurang jelas, tanyakan kembali untuk klarifikasi.
+        PENTING: Selalu gunakan Bahasa Indonesia yang baik, ramah, dan memotivasi siswa.";
 
         $userPrompt = "Title: {$question->title}\n\nQuestion Body: {$question->body}";
 
-        try {
-            $response = \Laravel\Ai\agent($systemPrompt)
-                ->prompt($userPrompt);
+        $keys = [
+            env('GEMINI_API_KEY_1'),
+            env('GEMINI_API_KEY_2'),
+            env('GEMINI_API_KEY_3'),
+        ];
 
+        $success = false;
+
+        foreach ($keys as $index => $key) {
+            if (empty($key)) {
+                continue;
+            }
+
+            try {
+                \Illuminate\Support\Facades\Config::set('ai.providers.gemini.key', $key);
+
+                $response = \Laravel\Ai\agent($systemPrompt)
+                    ->prompt($userPrompt);
+
+                $question->update([
+                    'ai_hint' => (string) $response,
+                ]);
+
+                Log::info("AI Hint generated for Question #{$question->id} using Key " . ($index + 1));
+                $success = true;
+                break; // Stop trying if successful
+            } catch (\Exception $e) {
+                Log::warning("AI Hint generation failed with Key " . ($index + 1) . " for Question #{$question->id}: " . $e->getMessage());
+            }
+        }
+
+        if (! $success) {
+            Log::error("All AI API Keys failed for Question #{$question->id}.");
             $question->update([
-                'ai_hint' => (string) $response,
+                'ai_hint' => "Mohon maaf, layanan AI saat ini sedang reload. Silakan diskusi dengan komunitas sementara waktu.",
             ]);
-
-            Log::info("AI Hint generated for Question #{$question->id}");
-        } catch (\Exception $e) {
-            Log::error("Failed to generate AI hint for Question #{$question->id}: " . $e->getMessage());
         }
     }
 }

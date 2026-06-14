@@ -13,7 +13,8 @@ use Illuminate\Events\Dispatcher;
 class GamificationEventSubscriber
 {
     public function __construct(
-        protected UserAchievementService $achievementService
+        protected UserAchievementService $achievementService,
+        protected \App\Domains\Gamification\Services\UserStreakService $streakService
     ) {}
 
     public function handleQuestionCreated(QuestionCreated $event): void
@@ -26,6 +27,8 @@ class GamificationEventSubscriber
             $event->question->subject_id,
             'CREATE_QUESTION'
         );
+
+        $this->streakService->recordActivity($event->question->user, 'qna');
     }
 
     public function handleAnswerSubmitted(AnswerSubmitted $event): void
@@ -35,6 +38,8 @@ class GamificationEventSubscriber
             $event->answer->question->subject_id,
             'SUBMIT_ANSWER'
         );
+
+        $this->streakService->recordActivity($event->answer->user, 'qna');
     }
 
     public function handleQuestionResolved(QuestionResolved $event): void

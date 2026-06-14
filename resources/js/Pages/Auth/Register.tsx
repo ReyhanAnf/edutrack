@@ -40,6 +40,22 @@ export default function Register() {
                     </div>
                 </div>
 
+                <a
+                    href={route('auth.google.redirect')}
+                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-primary hover:bg-sky-50 hover:text-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-primary dark:hover:bg-sky-950/30"
+                >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-sm font-black text-[#4285f4]">
+                        G
+                    </span>
+                    Daftar dengan Google
+                </a>
+
+                <div className="flex items-center gap-3 text-xs font-semibold uppercase text-gray-400">
+                    <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                    atau
+                    <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                </div>
+
                 <form onSubmit={submit} className="space-y-4">
                     <div className="space-y-1.5">
                         <InputLabel htmlFor="name" value="Nama" />

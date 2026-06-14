@@ -8,6 +8,8 @@ import { PageProps } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import MathInput from 'react-math-keyboard';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface Subject {
     id: number;
@@ -53,14 +55,21 @@ interface Props extends PageProps {
             };
         }>;
     };
+    current_streak: number;
+    today_streak: {
+        status: 'none' | 'half' | 'full';
+        qna_done: boolean;
+        quiz_done: boolean;
+    } | null;
 }
 
-export default function Index({ auth, questions, subjects, dashboardStats }: Props) {
+export default function Index({ auth, questions, subjects, dashboardStats, current_streak, today_streak }: Props) {
     const [timelineQuestions, setTimelineQuestions] = useState<Question[]>(questions.data);
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
     const [activeReactionPicker, setActiveReactionPicker] = useState<number | null>(null);
     const [bodyEditorKey, setBodyEditorKey] = useState(0);
+    const [editorMode, setEditorMode] = useState<'text' | 'math'>('text');
 
     const REACTIONS = [
         { type: 'icon', value: 'lightbulb', label: 'Genius' },
@@ -75,7 +84,7 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
         { type: 'emoji', value: '👏', label: 'Tepuk Tangan' },
     ];
 
-    const { data, setData, post, processing, errors, reset } = useForm<{
+    const { data, setData, post, processing, errors, reset, transform } = useForm<{
         subject_id: string;
         title: string;
         body: string;
@@ -182,6 +191,7 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
     const openCreateQuestionModal = () => {
         setEditingQuestion(null);
         reset();
+        setEditorMode('text');
         setBodyEditorKey((currentKey) => currentKey + 1);
         setIsQuestionModalOpen(true);
     };
@@ -195,39 +205,47 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
     const submitQuestion: FormEventHandler = (event) => {
         event.preventDefault();
         
+        const finalBody = editorMode === 'math' && !data.body.trim().startsWith('$$') 
+            ? `$$${data.body.trim()}$$` 
+            : data.body;
+
         if (editingQuestion) {
-            // Laravel requires POST with _method: PATCH to handle files in a PATCH request
             router.post(route('questions.update', editingQuestion.id), {
                 ...data,
-                _method: 'PATCH',
+                _method: 'patch',
+                body: finalBody,
             }, {
-                onSuccess: () => {
-                    reset();
-                    setEditingQuestion(null);
-                    setIsQuestionModalOpen(false);
-                },
+                onSuccess: () => closeQuestionModal(),
+                preserveScroll: true,
             });
         } else {
+            transform((d) => ({ ...d, body: finalBody }));
             post(route('questions.store'), {
+                onSuccess: () => closeQuestionModal(),
                 preserveScroll: true,
-                onSuccess: () => {
-                    reset();
-                    setData('stay_on_timeline', true);
-                    setIsQuestionModalOpen(false);
-                },
             });
         }
     };
 
     const startEdit = (question: Question) => {
         setEditingQuestion(question);
+        
+        let initialBody = question.body || '';
+        let mode: 'text' | 'math' = 'text';
+
+        if (initialBody.trim().startsWith('$$') && initialBody.trim().endsWith('$$')) {
+            mode = 'math';
+            initialBody = initialBody.trim().substring(2, initialBody.trim().length - 2);
+        }
+
         setData({
             subject_id: question.subject?.id.toString() || '',
             title: question.title,
-            body: question.body,
+            body: initialBody,
             image: null,
             stay_on_timeline: true,
         });
+        setEditorMode(mode);
         setBodyEditorKey((currentKey) => currentKey + 1);
         setIsQuestionModalOpen(true);
     };
@@ -331,37 +349,6 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                                 </button>
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-px bg-gray-100 dark:bg-gray-700 md:grid-cols-4">
-                            <div className="bg-white p-5 dark:bg-gray-800">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Rata-rata Nilai</p>
-                                    <span className="material-symbols-outlined text-lg text-purple-500">grade</span>
-                                </div>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{dashboardStats.avgGrade.toFixed(2)}</p>
-                            </div>
-                            <div className="bg-white p-5 dark:bg-gray-800">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Tugas Pending</p>
-                                    <span className="material-symbols-outlined text-lg text-orange-500">assignment_late</span>
-                                </div>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
-                            </div>
-                            <div className="bg-white p-5 dark:bg-gray-800">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Diskusi Aktif</p>
-                                    <span className="material-symbols-outlined text-lg text-sky-500">forum</span>
-                                </div>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{openQuestions}</p>
-                            </div>
-                            <div className="bg-white p-5 dark:bg-gray-800">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Jawaban Komunitas</p>
-                                    <span className="material-symbols-outlined text-lg text-green-500">school</span>
-                                </div>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAnswers}</p>
-                            </div>
-                        </div>
                     </section>
                 )}
 
@@ -374,7 +361,7 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                                     onClick={openCreateQuestionModal}
                                     className="flex min-h-10 flex-1 items-center rounded-xl border border-gray-200 bg-gray-50 px-4 text-left text-sm text-gray-500 transition-colors hover:border-sky-200 hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-sky-900 dark:hover:bg-sky-900/20"
                                 >
-                                    Lagi stuck di soal apa hari ini? Klik untuk tulis atau edit pertanyaan.
+                                   Lagi stuck di soal apa hari ini? Klik untuk tulis atau edit pertanyaan.
                                 </button>
                                 <button
                                     type="button"
@@ -469,9 +456,11 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                                                 </h2>
 
                                                 {/* Body */}
-                                                <p className="mt-3 line-clamp-3 whitespace-pre-line text-[12px] leading-7 text-gray-600 dark:text-gray-400">
-                                                    {question.body}
-                                                </p>
+                                                <div 
+                                                    className="mt-3 relative max-h-[120px] overflow-hidden text-[12px] leading-7 text-gray-600 dark:text-gray-400 prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1"
+                                                    style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }}
+                                                    dangerouslySetInnerHTML={{ __html: question.body }}
+                                                />
 
                                                 {/* Image */}
                                                 {question.image_url && (
@@ -636,6 +625,36 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                     </main>
 
                     <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+                        {/* Mini Streak Widget */}
+                        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 text-white shadow-sm relative overflow-hidden group">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-bold flex items-center gap-1.5 mb-0.5">
+                                        <span className="material-symbols-outlined text-lg">local_fire_department</span>
+                                        Api Belajar
+                                    </h3>
+                                    <p className="text-xs text-orange-100 font-medium">Hari ke-{current_streak} beruntun!</p>
+                                </div>
+                                <div className="text-right flex flex-col items-end gap-1">
+                                    <div className={`text-xs font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                                        today_streak?.status === 'full' 
+                                            ? 'bg-white/20 border-white/40' 
+                                            : today_streak?.status === 'half'
+                                            ? 'bg-amber-900/40 border-amber-500/50 text-amber-200'
+                                            : 'bg-black/20 border-black/10 text-gray-300'
+                                    }`}>
+                                        {today_streak?.status === 'full' ? 'Penuh 🔥' : today_streak?.status === 'half' ? 'Setengah 🟡' : 'Belum Aktif ⚪'}
+                                    </div>
+                                    <Link href={route('attendances.index')} className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity">
+                                        Lihat detail
+                                    </Link>
+                                </div>
+                            </div>
+                            <span className="material-symbols-outlined absolute -right-2 -bottom-4 text-[80px] text-white opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                                local_fire_department
+                            </span>
+                        </div>
+
                         {dashboardStats && (
                             <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                 <h2 className="font-bold text-gray-900 dark:text-gray-100">Dashboard Saya</h2>
@@ -736,20 +755,57 @@ export default function Index({ auth, questions, subjects, dashboardStats }: Pro
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="timeline_body" value="Detail Pertanyaan" />
-                            <div className="mt-1 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-                                <MathInput
-                                    key={bodyEditorKey}
-                                    setValue={(value) => setData('body', value)}
-                                    initialLatex={data.body}
-                                    lang="en"
-                                    fullWidth
-                                    withShowKeyboardButton
-                                    numericToolbarKeys={[]}
-                                    alphabeticToolbarKeys={[]}
-                                    size="medium"
-                                />
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <InputLabel htmlFor="timeline_body" value="Isi Pertanyaan" />
+                                <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditorMode('text')}
+                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${editorMode === 'text' ? 'bg-white shadow dark:bg-gray-700 text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
+                                    >
+                                        ✏️ Mode Teks
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditorMode('math')}
+                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${editorMode === 'math' ? 'bg-white shadow dark:bg-gray-700 text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
+                                    >
+                                        🔢 Mode Matematika
+                                    </button>
+                                </div>
                             </div>
+                            
+                            {editorMode === 'text' ? (
+                                <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900/50">
+                                    <ReactQuill 
+                                        theme="snow" 
+                                        value={data.body} 
+                                        onChange={(val) => setData('body', val)} 
+                                        modules={{
+                                            toolbar: [
+                                                ['bold', 'italic', 'underline'],
+                                                [{'list': 'ordered'}, {'list': 'bullet'}],
+                                                ['clean']
+                                            ]
+                                        }}
+                                        className="h-48 pb-10"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
+                                    <MathInput
+                                        key={bodyEditorKey}
+                                        setValue={(value) => setData('body', value)}
+                                        initialLatex={data.body}
+                                        lang="en"
+                                        fullWidth
+                                        withShowKeyboardButton
+                                        numericToolbarKeys={[]}
+                                        alphabeticToolbarKeys={[]}
+                                        size="medium"
+                                    />
+                                </div>
+                            )}
                             <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
                                 Tulis biasa seperti chat, lalu pakai tombol keyboard jika perlu rumus atau simbol matematika.
                             </p>

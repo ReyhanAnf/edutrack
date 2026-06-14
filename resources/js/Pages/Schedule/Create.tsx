@@ -21,7 +21,7 @@ interface Props extends PageProps {
 export default function Create({ auth, subjects }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         subject_id: '',
-        day: 'Senin',
+        day: 'Monday',
         start_time: '',
         end_time: '',
     });
@@ -31,7 +31,15 @@ export default function Create({ auth, subjects }: Props) {
         post(route('schedules.store'));
     };
 
-    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const days = [
+        { value: 'Monday', label: 'Senin' },
+        { value: 'Tuesday', label: 'Selasa' },
+        { value: 'Wednesday', label: 'Rabu' },
+        { value: 'Thursday', label: 'Kamis' },
+        { value: 'Friday', label: 'Jumat' },
+        { value: 'Saturday', label: 'Sabtu' },
+        { value: 'Sunday', label: 'Minggu' }
+    ];
 
     return (
         <AuthenticatedLayout
@@ -79,8 +87,8 @@ export default function Create({ auth, subjects }: Props) {
                                     required
                                 >
                                     {days.map((day) => (
-                                        <option key={day} value={day}>
-                                            {day}
+                                        <option key={day.value} value={day.value}>
+                                            {day.label}
                                         </option>
                                     ))}
                                 </select>

@@ -6,6 +6,12 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- PWA / Mobile First Meta Tags -->
+        <meta name="theme-color" content="#ffffff">
+        <link rel="manifest" href="/build/manifest.webmanifest">
+        <link rel="apple-touch-icon" href="/logo.png">
+
+
         <!-- Fonts & Icons -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

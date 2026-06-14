@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('grades', GradeController::class);
     Route::resource('schedules', ScheduleController::class);
     Route::resource('notes', NoteController::class);
+    Route::post('/attendances/recover-streak', [AttendanceController::class, 'recoverStreak'])->name('attendances.recover-streak');
     Route::resource('questions', QuestionController::class)->only(['index', 'create', 'store', 'show', 'update']);
     Route::post('questions/{question}/answers', [AnswerController::class, 'store'])->name('questions.answers.store');
     Route::patch('questions/{question}/answers/{answer}/brainliest', [AnswerController::class, 'markBrainliest'])
@@ -93,6 +94,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{quiz}/finish', [QuizController::class, 'finish'])->name('quizzes.finish');
 
     // API-style routes moved to Web for Session Authentication
     Route::post('/api-web/quizzes/generate', [App\Http\Controllers\Api\QuizController::class, 'generate'])->name('quizzes.generate');

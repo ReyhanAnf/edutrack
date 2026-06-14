@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
     plugins: [
@@ -9,6 +10,31 @@ export default defineConfig({
             refresh: true,
         }),
         react(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            outDir: 'public/build',
+            buildBase: '/build/',
+            manifest: {
+                name: 'EduTrack - AI Learning Network',
+                short_name: 'EduTrack',
+                description: 'AI-Powered Gamified Social Learning Network',
+                theme_color: '#ffffff',
+                background_color: '#ffffff',
+                display: 'standalone',
+                icons: [
+                    {
+                        src: '/logo.png', // Temporary, user can update this later
+                        sizes: '192x192',
+                        type: 'image/png'
+                    },
+                    {
+                        src: '/logo.png',
+                        sizes: '512x512',
+                        type: 'image/png'
+                    }
+                ]
+            }
+        })
     ],
 });
 

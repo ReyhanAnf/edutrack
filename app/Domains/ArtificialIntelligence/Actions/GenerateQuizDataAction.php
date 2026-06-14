@@ -14,12 +14,21 @@ class GenerateQuizDataAction
         protected QuizGeneratorInterface $generator
     ) {}
 
-    public function execute(int $userId, int $subjectId, int $count = 5): array
+    public function execute(int $userId, int $subjectId, int $count = 5, ?string $customPrompt = null, ?array $noteIds = null): array
     {
-        $notes = Note::where('user_id', $userId)
-            ->where('subject_id', $subjectId)
-            ->latest()
-            ->limit(5)
+        $context = "";
+        $isDiagnostic = false;
+
+        $notesQuery = Note::where('user_id', $userId);
+
+        if (!empty($noteIds)) {
+            $notesQuery->whereIn('id', $noteIds);
+        } else {
+            $notesQuery->where('subject_id', $subjectId);
+        }
+
+        $notes = $notesQuery->latest()
+            ->limit(!empty($noteIds) ? count($noteIds) : 5)
             ->get();
 
         $questions = Question::where('user_id', $userId)
@@ -34,7 +43,10 @@ class GenerateQuizDataAction
             ->limit(5)
             ->get();
 
-        $context = "";
+        if ($customPrompt) {
+            $context .= "PRIORITY USER INSTRUCTION/TOPIC:\n{$customPrompt}\n\n";
+            $context .= "Use the following context materials (if any) to fulfill the above request:\n\n";
+        }
 
         foreach ($notes as $note) {
             $context .= "Note: {$note->title}\n{$note->content}\n\n";
@@ -48,8 +60,7 @@ class GenerateQuizDataAction
             $context .= "Grade Record: Activity '{$grade->activity_name}' with score {$grade->score}\n";
         }
 
-        $isDiagnostic = false;
-        if (empty($context)) {
+        if (empty(trim($context))) {
             $subject = Subject::find($subjectId);
             $subjectName = $subject ? $subject->name : 'General Knowledge';
             $context = "General knowledge and curriculum for the subject: $subjectName";

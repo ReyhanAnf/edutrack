@@ -143,18 +143,11 @@ export default function Authenticated({
             )}
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col md:ml-64 min-h-screen">
+            <main className="flex-1 flex flex-col md:ml-64 min-h-screen pb-20 md:pb-0">
                 {/* Header */}
                 <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shadow-sm">
                     {/* Mobile menu button */}
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                            aria-label="Open menu"
-                        >
-                            <span className="material-symbols-outlined">menu</span>
-                        </button>
                         <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                             {header || 'Dashboard'}
                         </h1>
@@ -174,6 +167,46 @@ export default function Authenticated({
                     {children}
                 </div>
             </main>
+
+            {/* Mobile Bottom Navigation Bar */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 flex justify-around items-center h-16 px-2 safe-area-pb">
+                <Link 
+                    href={route('dashboard')} 
+                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('dashboard') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                >
+                    <span className="material-symbols-outlined text-2xl">{route().current('dashboard') ? 'dynamic_feed' : 'dynamic_feed'}</span>
+                    <span className="text-[10px] font-medium">Timeline</span>
+                </Link>
+                <Link 
+                    href={route('questions.index')} 
+                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('questions.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                >
+                    <span className="material-symbols-outlined text-2xl">forum</span>
+                    <span className="text-[10px] font-medium">Forum</span>
+                </Link>
+                <div className="relative -top-5 flex justify-center w-16">
+                    <Link 
+                        href={route('questions.create')} 
+                        className="flex items-center justify-center w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 hover:bg-primary/90 transition-transform active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-3xl">add</span>
+                    </Link>
+                </div>
+                <Link 
+                    href={route('leaderboard.index')} 
+                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('leaderboard.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                >
+                    <span className="material-symbols-outlined text-2xl">social_leaderboard</span>
+                    <span className="text-[10px] font-medium">Ranking</span>
+                </Link>
+                <button 
+                    onClick={() => setSidebarOpen(true)}
+                    className="flex flex-col items-center justify-center w-16 h-full space-y-1 text-gray-500 dark:text-gray-400 active:text-primary"
+                >
+                    <span className="material-symbols-outlined text-2xl">menu</span>
+                    <span className="text-[10px] font-medium">Menu</span>
+                </button>
+            </nav>
         </div>
     );
 }

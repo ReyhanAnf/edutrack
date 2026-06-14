@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Subject {
     id: number;
@@ -37,6 +38,7 @@ interface Question {
     user_reaction?: string | null;
     reactions_summary?: Record<string, number>;
     image_url?: string | null;
+    quiz_id?: number | null;
     user: {
         id: number;
         name: string;
@@ -101,14 +103,29 @@ export default function Show({ auth, question }: Props) {
     };
 
     const toggleQuestionLike = () => {
+        const previousLiked = questionLikedByViewer;
+        const previousCount = questionLikesCount;
+
         setQuestionLikedByViewer(!questionLikedByViewer);
         setQuestionLikesCount(count => questionLikedByViewer ? count - 1 : count + 1);
-        router.post(route('questions.likes.toggle', item.id), {}, { preserveScroll: true, preserveState: true });
+
+        window.axios
+            .post(route('questions.likes.toggle', item.id))
+            .then((response) => {
+                setQuestionLikedByViewer(response.data.liked);
+                setQuestionLikesCount(response.data.likes_count);
+            })
+            .catch(() => {
+                setQuestionLikedByViewer(previousLiked);
+                setQuestionLikesCount(previousCount);
+            });
     };
 
     const toggleReaction = (reaction: string) => {
+        const previousReaction = userReaction;
+        const previousSummary = reactionsSummary;
         const isRemoving = userReaction === reaction;
-        
+
         // Optimistic UI update
         setUserReaction(isRemoving ? null : reaction);
         setReactionsSummary(prev => {
@@ -123,14 +140,22 @@ export default function Show({ auth, question }: Props) {
             return next;
         });
 
-        router.post(route('questions.reactions.toggle', item.id), { reaction }, { 
-            preserveScroll: true, 
-            preserveState: true,
-            onFinish: () => setShowReactionPicker(false)
-        });
+        window.axios
+            .post(route('questions.reactions.toggle', item.id), { reaction })
+            .then((response) => {
+                setUserReaction(response.data.user_reaction);
+                setReactionsSummary(response.data.reactions);
+            })
+            .catch(() => {
+                setUserReaction(previousReaction);
+                setReactionsSummary(previousSummary);
+            })
+            .finally(() => setShowReactionPicker(false));
     };
 
     const toggleAnswerLike = (answerId: number) => {
+        const previousAnswers = answers;
+
         setAnswers(currentAnswers => currentAnswers.map(answer => {
             if (answer.id === answerId) {
                 return {
@@ -141,7 +166,25 @@ export default function Show({ auth, question }: Props) {
             }
             return answer;
         }));
-        router.post(route('answers.likes.toggle', answerId), {}, { preserveScroll: true, preserveState: true });
+
+        window.axios
+            .post(route('answers.likes.toggle', answerId))
+            .then((response) => {
+                setAnswers(currentAnswers =>
+                    sortAnswersByLikes(
+                        currentAnswers.map(answer =>
+                            answer.id === answerId
+                                ? {
+                                    ...answer,
+                                    liked_by_viewer: response.data.liked,
+                                    likes_count: response.data.likes_count,
+                                }
+                                : answer,
+                        ),
+                    ),
+                );
+            })
+            .catch(() => setAnswers(previousAnswers));
     };
 
     const canChooseBrainliest = auth.user.id === item.user.id;
@@ -190,16 +233,23 @@ export default function Show({ auth, question }: Props) {
                     is_brainliest: answer.id === event.question.brainliest_answer_id,
                 })),
             );
-        }).listen('.question.like.toggled', (event: { question: { id: number, likes_count: number } }) => {
+        }).listen('.question.like.toggled', (event: { question: { id: number, likes_count: number }, user_id: number, liked: boolean }) => {
             setQuestionLikesCount(event.question.likes_count);
+            if (event.user_id === auth.user.id) {
+                setQuestionLikedByViewer(event.liked);
+            }
         }).listen('.question.reaction.toggled', (event: { question_id: number, reactions: Record<string, number> }) => {
             setReactionsSummary(event.reactions);
-        }).listen('.answer.like.toggled', (event: { answer: { id: number, likes_count: number } }) => {
+        }).listen('.answer.like.toggled', (event: { answer: { id: number, likes_count: number }, user_id: number, liked: boolean }) => {
             setAnswers((currentAnswers) =>
                 sortAnswersByLikes(
                     currentAnswers.map((answer) =>
                         answer.id === event.answer.id
-                            ? { ...answer, likes_count: event.answer.likes_count }
+                            ? {
+                                ...answer,
+                                likes_count: event.answer.likes_count,
+                                liked_by_viewer: event.user_id === auth.user.id ? event.liked : answer.liked_by_viewer,
+                            }
                             : answer
                     )
                 )
@@ -348,7 +398,10 @@ export default function Show({ auth, question }: Props) {
                         </div>
                     )}
 
-                    <div className="mt-5 whitespace-pre-line text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300">{item.body}</div>
+                    <div 
+                        className="mt-5 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2"
+                        dangerouslySetInnerHTML={{ __html: item.body }}
+                    />
 
                     {item.image_url && (
                         <div className="mt-6 overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -366,7 +419,30 @@ export default function Show({ auth, question }: Props) {
                                 <span className="material-symbols-outlined text-base">psychology</span>
                                 Petunjuk AI
                             </div>
-                            {item.ai_hint}
+                            <div className="prose prose-sm prose-sky max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 dark:prose-invert">
+                                <ReactMarkdown>{item.ai_hint}</ReactMarkdown>
+                            </div>
+                        </div>
+                    )}
+
+                    {item.quiz_id && (
+                        <div className="mt-6 p-4 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 flex items-center justify-between group/quiz">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">
+                                    <span className="material-symbols-outlined">psychology_alt</span>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Kuis AI Tersedia</p>
+                                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">Klik untuk mulai latihan</p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('quizzes.show', item.quiz_id)}
+                                className="flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-bold text-primary shadow-sm ring-1 ring-inset ring-sky-200 transition-all hover:bg-sky-50 group-hover/quiz:ring-primary dark:bg-gray-800 dark:text-sky-400 dark:ring-sky-800 dark:hover:bg-gray-700"
+                            >
+                                Mulai Kuis
+                                <span className="material-symbols-outlined ml-1 text-[18px]">arrow_forward</span>
+                            </Link>
                         </div>
                     )}
                 </article>
@@ -418,9 +494,10 @@ export default function Show({ auth, question }: Props) {
                                     </button>
                                 )}
                             </div>
-                            <div className="whitespace-pre-line text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 mt-2">
-                                {answer.body}
-                            </div>
+                            <div 
+                                className="mt-6 text-base leading-relaxed text-gray-700 dark:text-gray-300 prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2"
+                                dangerouslySetInnerHTML={{ __html: answer.body }}
+                            />
                             
                             <div className="mt-3 flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700 border-dashed">
                                 <button

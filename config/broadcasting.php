@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    'default' => (env('APP_ENV') === 'production' || env('USE_PUSHER_AT_LOCAL', false)) 
+        ? 'pusher' 
+        : env('BROADCAST_CONNECTION', 'null'),
 
     /*
     |--------------------------------------------------------------------------

@@ -35,4 +35,19 @@ class AnswerLikeToggled implements ShouldBroadcastNow
     {
         return 'answer.like.toggled';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'answer' => [
+                'id' => $this->answer->id,
+                'likes_count' => $this->answer->likes_count,
+            ],
+            'user_id' => $this->userId,
+            'liked' => $this->liked,
+        ];
+    }
 }

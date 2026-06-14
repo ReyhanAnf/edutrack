@@ -131,3 +131,72 @@ test('authenticated user can toggle question like', function () {
         'user_id' => $viewer->id,
     ]);
 });
+
+test('authenticated user can toggle question reaction with json response', function () {
+    $asker = User::factory()->create();
+    $viewer = User::factory()->create();
+    $question = Question::query()->create([
+        'user_id' => $asker->id,
+        'title' => 'Apa maksud energi kinetik?',
+        'body' => 'Saya ingin memahami contoh energi kinetik.',
+        'source_type' => 'text',
+        'last_activity_at' => now(),
+    ]);
+
+    $reactionResponse = $this
+        ->actingAs($viewer)
+        ->postJson(route('questions.reactions.toggle', $question), [
+            'reaction' => 'lightbulb',
+        ]);
+
+    $reactionResponse
+        ->assertOk()
+        ->assertJson([
+            'user_reaction' => 'lightbulb',
+            'reactions' => [
+                'lightbulb' => 1,
+            ],
+        ]);
+
+    $removeResponse = $this
+        ->actingAs($viewer)
+        ->postJson(route('questions.reactions.toggle', $question), [
+            'reaction' => 'lightbulb',
+        ]);
+
+    $removeResponse
+        ->assertOk()
+        ->assertJson([
+            'user_reaction' => null,
+            'reactions' => [],
+        ]);
+});
+
+test('authenticated user can toggle answer like with json response', function () {
+    $asker = User::factory()->create();
+    $answerer = User::factory()->create();
+    $viewer = User::factory()->create();
+    $question = Question::query()->create([
+        'user_id' => $asker->id,
+        'title' => 'Kenapa air mendidih?',
+        'body' => 'Saya ingin memahami perubahan wujud air.',
+        'source_type' => 'text',
+        'last_activity_at' => now(),
+    ]);
+    $answer = Answer::query()->create([
+        'question_id' => $question->id,
+        'user_id' => $answerer->id,
+        'body' => 'Air mendidih saat tekanan uapnya sama dengan tekanan lingkungan.',
+    ]);
+
+    $likeResponse = $this
+        ->actingAs($viewer)
+        ->postJson(route('answers.likes.toggle', $answer));
+
+    $likeResponse
+        ->assertOk()
+        ->assertJson([
+            'liked' => true,
+            'likes_count' => 1,
+        ]);
+});

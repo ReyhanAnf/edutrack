@@ -34,6 +34,9 @@ class QuizController extends Controller
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
             'count' => 'integer|min:1|max:20',
+            'custom_prompt' => 'nullable|string|max:1000',
+            'note_ids' => 'nullable|array',
+            'note_ids.*' => 'integer|exists:notes,id',
         ]);
 
         $userId = Auth::id();
@@ -47,9 +50,11 @@ class QuizController extends Controller
 
         $subjectId = $request->subject_id;
         $count = $request->input('count', 5);
+        $customPrompt = $request->input('custom_prompt');
+        $noteIds = $request->input('note_ids');
 
         try {
-            $questionsData = $generateAction->execute($userId, $subjectId, $count);
+            $questionsData = $generateAction->execute($userId, $subjectId, $count, $customPrompt, $noteIds);
 
             if (empty($questionsData)) {
                 return response()->json([
@@ -59,6 +64,12 @@ class QuizController extends Controller
             }
 
             $quiz = $saveAction->execute($userId, $subjectId, $questionsData);
+
+            // Record Gamification Streak Activity for Quiz
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                app(\App\Domains\Gamification\Services\UserStreakService::class)->recordActivity($user, 'quiz');
+            }
 
             return response()->json([
                 'success' => true,

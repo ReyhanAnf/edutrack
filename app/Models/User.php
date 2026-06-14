@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -21,6 +23,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
+        'google_id',
+        'avatar',
         'password',
     ];
 
@@ -50,62 +55,62 @@ class User extends Authenticatable
     /**
      * Get the notes for the user.
      */
-    public function notes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function notes(): HasMany
     {
         return $this->hasMany(Note::class);
     }
 
-    public function subjects(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function subjects(): HasMany
     {
         return $this->hasMany(Subject::class);
     }
 
-    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
     }
 
-    public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
     }
 
-    public function grades(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function grades(): HasMany
     {
         return $this->hasMany(Grade::class);
     }
 
-    public function attendances(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
-    public function questions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
     }
 
-    public function answers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function answers(): HasMany
     {
         return $this->hasMany(Answer::class);
     }
 
-    public function questionLikes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function questionLikes(): HasMany
     {
         return $this->hasMany(QuestionLike::class);
     }
 
-    public function quizzes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function quizzes(): HasMany
     {
         return $this->hasMany(Quiz::class);
     }
 
-    public function attempts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function attempts(): HasMany
     {
         return $this->hasMany(QuizAttempt::class);
     }
 
-    public function userMissions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function userMissions(): HasMany
     {
         return $this->hasMany(UserMission::class);
     }

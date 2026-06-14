@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domains\Gamification\Actions\GetUserActivityStatsAction;
 use App\Domains\Gamification\Actions\UpdateMissionProgressAction;
+use App\Domains\Gamification\Services\UserStreakService;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Http\Resources\AttendanceResource;
@@ -19,7 +20,11 @@ class AttendanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(GetUserActivityStatsAction $statsAction, UpdateMissionProgressAction $missionAction): Response
+    public function index(
+        GetUserActivityStatsAction $statsAction, 
+        UpdateMissionProgressAction $missionAction,
+        UserStreakService $streakService
+    ): Response
     {
         $user = Auth::user();
         
@@ -42,6 +47,13 @@ class AttendanceController extends Controller
                     'completed_at' => $um->completed_at,
                 ];
             }),
+            'current_streak' => $streakService->getConsecutiveStreaks($user),
+            'today_streak' => \App\Models\UserDailyStreak::where('user_id', $user->id)
+                                ->where('date', \Carbon\Carbon::today()->toDateString())
+                                ->first()?->toArray(),
+            'pending_recovery' => \App\Models\UserStreakRecovery::where('user_id', $user->id)
+                                ->where('status', 'pending')
+                                ->first()?->toArray(),
         ]);
     }
 
@@ -114,5 +126,23 @@ class AttendanceController extends Controller
         $attendance->delete();
 
         return redirect()->route('attendances.index');
+    }
+
+    public function recoverStreak(UserStreakService $streakService): RedirectResponse
+    {
+        $user = Auth::user();
+        $pendingRecovery = \App\Models\UserStreakRecovery::where('user_id', $user->id)
+                            ->where('status', 'pending')
+                            ->first();
+
+        if (!$pendingRecovery) {
+            return redirect()->back()->with('error', 'Tidak ada streak yang perlu dipulihkan.');
+        }
+
+        if ($streakService->payForRecovery($pendingRecovery)) {
+            return redirect()->back()->with('success', 'Streak berhasil dipulihkan!');
+        }
+
+        return redirect()->back()->with('error', 'Poin "Aktivitas Streak" Anda tidak cukup untuk memulihkan streak.');
     }
 }
