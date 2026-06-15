@@ -78,6 +78,10 @@
     --font-sans: 'Noto Sans Variable', sans-serif;
     --font-heading: 'Playfair Display Variable', serif
   }
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
   /* * {
     @apply border-border outline-ring/50;
   }

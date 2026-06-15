@@ -2,7 +2,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import axios from 'axios';
 
 interface Question {
     id: number;
@@ -60,7 +59,7 @@ export default function Show({ quiz }: Props) {
     };
 
     const handleSavePrompt = (save: boolean) => {
-        axios.post(route('quizzes.finish', quiz.id), {
+        window.axios.post(route('quizzes.finish', quiz.id), {
             save_score: save,
             score: score,
             total_questions: questions.length

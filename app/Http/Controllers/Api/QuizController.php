@@ -33,7 +33,8 @@ class QuizController extends Controller
     {
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
-            'count' => 'integer|min:1|max:20',
+            'count' => 'integer|in:5,10,15',
+            'source' => 'required|in:notes,ai_knowledge',
             'custom_prompt' => 'nullable|string|max:1000',
             'note_ids' => 'nullable|array',
             'note_ids.*' => 'integer|exists:notes,id',
@@ -50,11 +51,12 @@ class QuizController extends Controller
 
         $subjectId = $request->subject_id;
         $count = $request->input('count', 5);
+        $source = $request->input('source', 'notes');
         $customPrompt = $request->input('custom_prompt');
         $noteIds = $request->input('note_ids');
 
         try {
-            $questionsData = $generateAction->execute($userId, $subjectId, $count, $customPrompt, $noteIds);
+            $questionsData = $generateAction->execute($userId, $subjectId, $count, $customPrompt, $noteIds, $source);
 
             if (empty($questionsData)) {
                 return response()->json([

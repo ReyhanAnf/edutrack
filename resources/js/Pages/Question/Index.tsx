@@ -375,41 +375,41 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
         <AuthenticatedLayout header="Timeline Belajar">
             <Head title="Timeline Belajar" />
 
-            <div className="mx-auto max-w-6xl space-y-6">
+            <div className="mx-auto max-w-6xl space-y-4 md:space-y-5">
                         <section className="rounded-md border border-gray-100 shadow-none dark:border-gray-700 dark:bg-gray-800">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 md:gap-3">
                                 <button
                                     type="button"
                                     onClick={openCreateQuestionModal}
-                                    className="flex min-h-10 flex-1 items-center rounded-xl border border-gray-200 bg-white px-4 text-left text-sm text-gray-500 transition-colors hover:border-sky-200 hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-sky-900 dark:hover:bg-sky-900/20"
+                                    className="flex min-h-9 md:min-h-10 flex-1 items-center rounded-lg border border-gray-200 bg-white px-3 md:px-4 text-left text-sm text-gray-500 transition-colors hover:border-sky-200 hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-sky-900 dark:hover:bg-sky-900/20"
                                 >
                                     Ketik pertanyaan..
                                 </button>
                                 <button
                                     type="button"
                                     onClick={openCreateQuestionModal}
-                                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
+                                    className="inline-flex h-9 md:h-10 items-center gap-1.5 md:gap-2 rounded-lg bg-primary px-3 md:px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
                                 >
                                     <span className="material-symbols-outlined text-base">edit</span>
                                     Post
                                 </button>
                             </div>
                         </section>
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+                <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
                     <main className="space-y-4 order-2 lg:order-1">
 
                         <div className="space-y-2">
                             {timelineQuestions.map((question) => (
                                 <article
                                     key={question.id}
-                                    className="group overflow-hidden rounded-2xl border border-gray-200/80 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-sky-800"
+                                    className="group overflow-hidden rounded-lg border border-gray-200/80 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-sky-800"
                                 >
-                                    <Link href={route('questions.show', question.id)} className="block p-6">
+                                    <Link href={route('questions.show', question.id)} className="block p-3 md:p-5">
                                         <div className="flex gap-4">
                                             <div className="min-w-0 flex-1">
                                                 {/* Meta */}
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                                                <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                                                    <div className="flex flex-wrap items-center gap-x-1.5 md:gap-x-2 gap-y-0.5 text-xs md:text-sm">
                                                         <div className="flex items-center gap-1.5">
                                                             <Link 
                                                                 href={route('users.show', question.user.id)}
@@ -449,7 +449,7 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                                 </div>
 
                                                 {/* Badge */}
-                                                <div className="mt-3 flex flex-wrap items-center gap-1">
+                                                <div className="mt-2 md:mt-3 flex flex-wrap items-center gap-1">
                                                     {question.subject && (
                                                         <span
                                                             className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-1 text-[10px] font-semibold tracking-wide dark:border-gray-700 dark:bg-gray-900"
@@ -482,20 +482,20 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                                 </div>
 
                                                 {/* Title */}
-                                                <h2 className="mt-5 line-clamp-2 text-[1rem] font-bold leading-snug tracking-tight text-gray-900 transition-colors group-hover:text-primary dark:text-white">
+                                                <h2 className="mt-3 md:mt-4 line-clamp-2 text-sm md:text-base font-bold leading-snug tracking-tight text-gray-900 transition-colors group-hover:text-primary dark:text-white">
                                                     {question.title}
                                                 </h2>
 
                                                 {/* Body */}
                                                 <div 
-                                                    className="mt-3 relative max-h-[120px] overflow-hidden text-[12px] leading-7 text-gray-600 dark:text-gray-400 prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1"
+                                                    className="mt-2 md:mt-3 relative max-h-[100px] md:max-h-[120px] overflow-hidden text-[11px] md:text-[12px] leading-6 md:leading-7 text-gray-600 dark:text-gray-400 prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1"
                                                     style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }}
                                                     dangerouslySetInnerHTML={{ __html: question.body }}
                                                 />
 
                                                 {/* Image */}
                                                 {question.image_url && (
-                                                    <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+                                                    <div className="mt-3 md:mt-4 overflow-hidden rounded-md border border-gray-100 dark:border-gray-800">
                                                         <img 
                                                             src={question.image_url} 
                                                             alt={question.title}
@@ -506,19 +506,19 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
 
                                                 {/* Quiz Link */}
                                                 {question.quiz_id && (
-                                                    <div className="mt-4 p-4 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 flex items-center justify-between group/quiz">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">
-                                                                <span className="material-symbols-outlined">psychology_alt</span>
+                                                    <div className="mt-3 md:mt-4 p-3 md:p-4 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group/quiz">
+                                                        <div className="flex items-center gap-2 md:gap-3">
+                                                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-md bg-primary text-white flex items-center justify-center flex-shrink-0">
+                                                                <span className="material-symbols-outlined text-lg md:text-xl">psychology_alt</span>
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs font-semibold text-primary uppercase tracking-wider">Kuis AI Tersedia</p>
-                                                                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">Klik untuk mulai latihan</p>
+                                                                <p className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">Kuis AI Tersedia</p>
+                                                                <p className="text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100">Klik untuk mulai latihan</p>
                                                             </div>
                                                         </div>
                                                         <Link 
                                                             href={route('quizzes.show', question.quiz_id)}
-                                                            className="px-4 py-2 bg-white dark:bg-gray-800 border border-sky-200 dark:border-sky-700 rounded-lg text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                            className="w-full sm:w-auto text-center px-3 py-1.5 bg-white dark:bg-gray-800 border border-sky-200 dark:border-sky-700 rounded-md text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
                                                         >
                                                             Buka Kuis
                                                         </Link>
@@ -559,48 +559,48 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                         <button
                                             type="button"
                                             onClick={() => toggleLike(question.id)}
-                                            className={`flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.liked_by_viewer
+                                            className={`flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.liked_by_viewer
                                                     ? 'text-primary'
                                                     : 'text-gray-500 dark:text-gray-400'
                                                 }`}
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">
+                                            <span className="material-symbols-outlined text-[16px] md:text-[18px]">
                                                 {question.liked_by_viewer ? 'shift_lock' : 'shift'}
                                             </span>
 
-                                            <span className="text-xs">{question.likes_count ?? 0}</span>
+                                            <span className="text-[11px] md:text-xs">{question.likes_count ?? 0}</span>
                                         </button>
 
                                         <div className="relative border-l border-gray-100 dark:border-gray-700">
                                             <button
                                                 type="button"
                                                 onClick={() => setActiveReactionPicker(activeReactionPicker === question.id ? null : question.id)}
-                                                className={`flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.user_reaction 
+                                                className={`flex w-full items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 text-sm font-medium transition-all hover:bg-white hover:text-primary dark:hover:bg-gray-800 ${question.user_reaction 
                                                         ? 'text-primary' 
                                                         : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
                                                 {question.user_reaction ? (
                                                     REACTIONS.find(r => r.value === question.user_reaction)?.type === 'icon' ? (
-                                                        <span className="material-symbols-outlined text-[18px] fill-current">{question.user_reaction}</span>
+                                                        <span className="material-symbols-outlined text-[16px] md:text-[18px] fill-current">{question.user_reaction}</span>
                                                     ) : (
-                                                        <span className="text-[16px]">{question.user_reaction}</span>
+                                                        <span className="text-[14px] md:text-[16px]">{question.user_reaction}</span>
                                                     )
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-[18px]">add_reaction</span>
+                                                    <span className="material-symbols-outlined text-[16px] md:text-[18px]">add_reaction</span>
                                                 )}
-                                                <span className="hidden sm:inline text-xs">{question.user_reaction ? 'Bereaksi' : 'Reaksi'}</span>
+                                                <span className="hidden sm:inline text-[11px] md:text-xs">{question.user_reaction ? 'Bereaksi' : 'Reaksi'}</span>
                                             </button>
 
                                             {activeReactionPicker === question.id && (
-                                                <div className="absolute bottom-full left-0 mb-2 z-10 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-800 animate-in fade-in slide-in-from-bottom-2">
-                                                    <div className="grid grid-cols-5 gap-1">
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mb-2 z-10 w-56 sm:w-64 rounded-lg border border-gray-200 bg-white p-1.5 shadow-xl dark:border-gray-700 dark:bg-gray-800 animate-in fade-in slide-in-from-bottom-2">
+                                                    <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
                                                         {REACTIONS.map((reaction) => (
                                                             <button
                                                                 key={reaction.value}
                                                                 onClick={() => toggleReaction(question.id, reaction.value)}
                                                                 title={reaction.label}
-                                                                className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all hover:scale-110 ${
+                                                                className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md transition-all hover:scale-110 ${
                                                                     question.user_reaction === reaction.value 
                                                                         ? 'bg-sky-100 text-primary dark:bg-sky-900/40' 
                                                                         : 'hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -622,24 +622,24 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
 
                                         <Link
                                             href={route('questions.show', question.id)}
-                                            className="flex items-center justify-center gap-2 border-x border-gray-100 px-4 py-3 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                                            className="flex items-center justify-center gap-1 md:gap-2 border-x border-gray-100 px-2 md:px-4 py-2 md:py-2.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">
+                                            <span className="material-symbols-outlined text-[16px] md:text-[18px]">
                                                 forum
                                             </span>
 
-                                            <span className="text-xs">{question.answers_count ?? 0}</span>
+                                            <span className="text-[11px] md:text-xs">{question.answers_count ?? 0}</span>
                                         </Link>
 
                                         <Link
                                             href={route('questions.show', question.id)}
-                                            className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800"
+                                            className="flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">
+                                            <span className="material-symbols-outlined text-[16px] md:text-[18px]">
                                                 send
                                             </span>
 
-                                            <span className="hidden sm:inline text-xs">Jawab</span>
+                                            <span className="hidden sm:inline text-[11px] md:text-xs">Jawab</span>
                                         </Link>
                                     </div>
                                 </article>
@@ -647,24 +647,104 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                         </div>
 
                         {timelineQuestions.length === 0 && (
-                            <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                                <span className="material-symbols-outlined mb-3 text-5xl text-gray-300 dark:text-gray-600">forum</span>
-                                <p className="font-medium text-gray-500 dark:text-gray-400">Timeline masih kosong.</p>
-                                <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">Mulai diskusi pertama dari tombol Post.</p>
+                            <div className="rounded-lg border border-gray-100 bg-white p-8 md:p-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <span className="material-symbols-outlined mb-2 text-4xl md:text-5xl text-gray-300 dark:text-gray-600">forum</span>
+                                <p className="font-medium text-gray-500 dark:text-gray-400 text-sm">Timeline masih kosong.</p>
+                                <p className="mt-1 text-xs md:text-sm text-gray-400 dark:text-gray-500">Mulai diskusi pertama dari tombol Post.</p>
                             </div>
                         )}
                     </main>
 
-                    <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start order-1 lg:order-2">
+                    <aside className="lg:space-y-4 lg:sticky lg:top-24 lg:self-start order-1 lg:order-2">
+                        {/* Mobile: Horizontal Scrollable Strip */}
+                        <div className="lg:hidden -mx-4 sm:-mx-0 px-4 sm:px-0 mb-4">
+                            <div className="flex gap-2.5 overflow-x-auto pb-2 custom-scrollbar snap-x snap-mandatory">
+                                {/* Streak Widget */}
+                                <Link href={route('attendances.index')} className="snap-start flex-shrink-0 w-44 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg p-3 text-white shadow-sm relative overflow-hidden">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <span className="material-symbols-outlined text-xl">local_fire_department</span>
+                                        <span className="text-lg font-black">Hari ke-{current_streak}</span>
+                                    </div>
+                                    <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded w-fit border ${
+                                        today_streak?.status === 'full' 
+                                            ? 'bg-white/20 border-white/30' 
+                                            : today_streak?.status === 'half'
+                                            ? 'bg-amber-900/30 border-amber-500/40 text-amber-100'
+                                            : 'bg-black/15 border-black/10 text-white/70'
+                                    }`}>
+                                        {today_streak?.status === 'full' ? 'Penuh 🔥' : today_streak?.status === 'half' ? 'Setengah 🟡' : 'Belum Aktif'}
+                                    </div>
+                                    <span className="material-symbols-outlined absolute -right-1 -bottom-2 text-[50px] text-white opacity-10 pointer-events-none">
+                                        local_fire_department
+                                    </span>
+                                </Link>
+
+                                {/* Next Schedule */}
+                                {dashboardStats?.nextSchedule && (
+                                    <div className="snap-start flex-shrink-0 w-44 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1.5">
+                                            <span className="material-symbols-outlined text-sm">schedule</span>
+                                            Kelas Berikutnya
+                                        </div>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1 mb-2">{dashboardStats.nextSchedule.subject?.name}</p>
+                                        <CountdownTimer targetDate={dashboardStats.nextSchedule.next_occurrence} />
+                                    </div>
+                                )}
+
+                                {/* Next Task */}
+                                {dashboardStats?.nextTask && (
+                                    <div className="snap-start flex-shrink-0 w-44 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-1.5">
+                                            <span className="material-symbols-outlined text-sm">assignment_late</span>
+                                            Tugas Terdekat
+                                        </div>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1 mb-2">{dashboardStats.nextTask.title}</p>
+                                        <CountdownTimer targetDate={dashboardStats.nextTask.deadline_at} />
+                                    </div>
+                                )}
+
+                                {/* Pending Assignments */}
+                                {dashboardStats && (
+                                    <div className="snap-start flex-shrink-0 w-32 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="material-symbols-outlined text-lg text-orange-500">assignment_late</span>
+                                        </div>
+                                        <p className="text-2xl font-black text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
+                                        <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tugas Pending</p>
+                                    </div>
+                                )}
+
+                                {/* Today's Schedule Quick */}
+                                {dashboardStats && dashboardStats.todaysSchedule.length > 0 && (
+                                    <div className="snap-start flex-shrink-0 w-44 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-2">
+                                            <span className="material-symbols-outlined text-sm">today</span>
+                                            Jadwal Hari Ini
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {dashboardStats.todaysSchedule.slice(0, 3).map((schedule) => (
+                                                <div key={schedule.id} className="flex items-center gap-2 text-xs">
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100 tabular-nums">{schedule.start_time.substring(0, 5)}</span>
+                                                    <span className="truncate text-gray-500 dark:text-gray-400">{schedule.subject.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Desktop: Full Sidebar Cards */}
+                        <div className="hidden lg:block space-y-4">
                         {/* Mini Streak Widget */}
-                        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 text-white shadow-sm relative overflow-hidden group">
+                        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg p-4 text-white shadow-sm relative overflow-hidden group">
                             <div className="relative z-10 flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold flex items-center gap-1.5 mb-0.5">
-                                        <span className="material-symbols-outlined text-lg">local_fire_department</span>
+                                    <h3 className="font-bold flex items-center gap-1.5 mb-0.5 text-sm">
+                                        <span className="material-symbols-outlined text-base">local_fire_department</span>
                                         Api Belajar
                                     </h3>
-                                    <p className="text-xs text-orange-100 font-medium">Hari ke-{current_streak} beruntun!</p>
+                                    <p className="text-[11px] text-orange-100 font-medium">Hari ke-{current_streak} beruntun!</p>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-1">
                                     <div className={`text-xs font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
@@ -681,57 +761,57 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                     </Link>
                                 </div>
                             </div>
-                            <span className="material-symbols-outlined absolute -right-2 -bottom-4 text-[80px] text-white opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                            <span className="material-symbols-outlined absolute -right-2 -bottom-3 text-[64px] text-white opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                                 local_fire_department
                             </span>
                         </div>
 
                         {dashboardStats && dashboardStats.nextSchedule && (
-                            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 transition-all hover:border-sky-200">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <section className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 transition-all hover:border-sky-200">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[16px] text-blue-500">schedule</span>
                                         Kelas Mendatang
                                     </h3>
                                 </div>
-                                <p className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{dashboardStats.nextSchedule.subject?.name}</p>
-                                <div className="flex items-center justify-between mt-3 bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700/50">
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Dimulai dalam:</span>
+                                <p className="font-bold text-sm text-gray-900 dark:text-white mb-1.5 line-clamp-1">{dashboardStats.nextSchedule.subject?.name}</p>
+                                <div className="flex items-center justify-between mt-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-md border border-gray-100 dark:border-gray-700/50">
+                                    <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Dimulai dalam:</span>
                                     <CountdownTimer targetDate={dashboardStats.nextSchedule.next_occurrence} />
                                 </div>
                             </section>
                         )}
 
                         {dashboardStats && dashboardStats.nextTask && (
-                            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 transition-all hover:border-orange-200">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <section className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 transition-all hover:border-orange-200">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[16px] text-orange-500">assignment_late</span>
                                         Tugas Terdekat
                                     </h3>
                                 </div>
-                                <p className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{dashboardStats.nextTask.title}</p>
-                                <div className="flex items-center justify-between mt-3 bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700/50">
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Deadline:</span>
+                                <p className="font-bold text-sm text-gray-900 dark:text-white mb-1.5 line-clamp-1">{dashboardStats.nextTask.title}</p>
+                                <div className="flex items-center justify-between mt-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-md border border-gray-100 dark:border-gray-700/50">
+                                    <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Deadline:</span>
                                     <CountdownTimer targetDate={dashboardStats.nextTask.deadline_at} />
                                 </div>
                             </section>
                         )}
 
                         {dashboardStats && (
-                            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                                <h2 className="font-bold text-gray-900 dark:text-gray-100">Dashboard Saya</h2>
-                                <div className="mt-4 space-y-3">
-                                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+                            <section className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <h2 className="font-bold text-sm text-gray-900 dark:text-gray-100">Dashboard Saya</h2>
+                                <div className="mt-3 space-y-2">
+                                    <div className="flex items-center justify-between rounded-md bg-gray-50 p-2.5 dark:bg-gray-900">
                                         <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Tugas Pending</p>
-                                            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">Tugas Pending</p>
+                                            <p className="text-base font-bold text-gray-900 dark:text-gray-100">{dashboardStats.pendingAssignments}</p>
                                         </div>
                                         <span className="material-symbols-outlined text-orange-500">assignment_late</span>
                                     </div>
-                                    <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Jadwal Hari Ini</p>
+                                    <div className="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900">
+                                        <div className="mb-1.5 flex items-center justify-between">
+                                            <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Jadwal Hari Ini</p>
                                             <span className="material-symbols-outlined text-base text-blue-500">calendar_today</span>
                                         </div>
                                         {dashboardStats.todaysSchedule.length > 0 ? (
@@ -750,15 +830,16 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                 </div>
                             </section>
                         )}
+                        </div>
                     </aside>
                 </div>
             </div>
 
             <Drawer show={isQuestionModalOpen} maxWidth="2xl" onClose={closeQuestionModal}>
-                <div className="bg-white p-6 dark:bg-gray-800">
-                    <div className="mb-6 flex items-start justify-between gap-4">
+                <div className="bg-white p-4 md:p-6 dark:bg-gray-800">
+                    <div className="mb-4 md:mb-6 flex items-start justify-between gap-3 md:gap-4">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100">
                                 {editingQuestion ? 'Edit Pertanyaan' : 'Buat Pertanyaan'}
                             </h2>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -775,7 +856,7 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                         </button>
                     </div>
 
-                    <form onSubmit={submitQuestion} className="space-y-5">
+                    <form onSubmit={submitQuestion} className="space-y-4 md:space-y-5">
                         <div>
                             <InputLabel htmlFor="timeline_subject_id" value="Mata Pelajaran (Opsional)" />
                             <select
@@ -832,7 +913,7 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                             </div>
                             
                             {editorMode === 'text' ? (
-                                <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900/50">
+                                <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900/50">
                                     <ReactQuill 
                                         theme="snow" 
                                         value={data.body} 
@@ -848,7 +929,7 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                     />
                                 </div>
                             ) : (
-                                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
+                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 md:p-4 dark:border-gray-700 dark:bg-gray-900/50">
                                     <MathInput
                                         key={bodyEditorKey}
                                         setValue={(value) => setData('body', value)}
@@ -871,10 +952,10 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                         <div>
                             <InputLabel htmlFor="timeline_image" value="Gambar Soal (Opsional)" />
                             <div className="mt-1 flex items-center gap-4">
-                                <label className="flex h-32 flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-colors hover:border-primary hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary/50">
-                                    <div className="flex flex-col items-center justify-center pb-6 pt-5">
-                                        <span className="material-symbols-outlined mb-2 text-gray-400">image</span>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <label className="flex h-24 md:h-32 flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 transition-colors hover:border-primary hover:bg-sky-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary/50">
+                                    <div className="flex flex-col items-center justify-center py-3">
+                                        <span className="material-symbols-outlined mb-1 text-gray-400 text-xl">image</span>
+                                        <p className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400">
                                             {data.image ? data.image.name : 'Upload gambar soal (JPG, PNG)'}
                                         </p>
                                     </div>
@@ -887,7 +968,7 @@ export default function Index({ auth, questions, subjects, dashboardStats, curre
                                     />
                                 </label>
                                 {data.image && (
-                                    <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="relative h-24 w-24 md:h-32 md:w-32 shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
                                         <img
                                             src={URL.createObjectURL(data.image)}
                                             alt="Preview"

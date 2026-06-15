@@ -183,7 +183,7 @@ export default function Authenticated({
     );
 
     return (
-        <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
+        <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300 overflow-x-hidden">
             {/* Desktop Sidebar */}
             {user && (
                 <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full overflow-y-auto">
@@ -193,18 +193,21 @@ export default function Authenticated({
 
             {/* Mobile Sidebar (drawer) */}
             {sidebarOpen && user && (
-                <div className="fixed inset-0 z-40 md:hidden">
-                    <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-                    <aside className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col shadow-2xl">
+                <div className="fixed inset-0 z-40 md:hidden" onClick={() => setSidebarOpen(false)}>
+                    <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" />
+                    <aside
+                        className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col shadow-2xl animate-in slide-in-from-left duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <SidebarContent />
                     </aside>
                 </div>
             )}
 
             {/* Main Content */}
-            <main className={`flex-1 flex flex-col min-h-screen pb-20 md:pb-0 ${user ? 'md:ml-64' : ''}`}>
+            <main className={`flex-1 flex flex-col min-h-screen min-w-0 pb-14 md:pb-0 ${user ? 'md:ml-64' : ''}`}>
                 {/* Header */}
-                <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shadow-sm">
+                <header className="h-14 md:h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-3 md:px-8 sticky top-0 z-10 shadow-sm">
                     <div className="flex items-center gap-4 flex-1">
                         {!user && (
                             <Link href="/" className="text-xl font-bold text-primary flex items-center gap-2 mr-4">
@@ -212,11 +215,11 @@ export default function Authenticated({
                                 <span className="hidden sm:inline">EduTrack</span>
                             </Link>
                         )}
-                        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-200 shrink-0 hidden sm:block">
+                        <h1 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 shrink-0 hidden sm:block truncate max-w-[140px] md:max-w-none">
                             {header || 'Dashboard'}
                         </h1>
 
-                        <div className="flex-1 max-w-md mx-2 sm:mx-6">
+                        <div className="flex-1 max-w-md mx-1.5 sm:mx-6">
                             <form action={route('search.index')} method="GET" className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
                                 <input 
@@ -248,40 +251,43 @@ export default function Authenticated({
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 p-3 sm:p-4 md:p-8">
+                <div className="flex-1 p-3 sm:p-4 md:p-8 overflow-hidden pt-3 md:pt-6">
                     {children}
                 </div>
             </main>
 
             {/* Mobile Bottom Navigation Bar */}
             {user ? (
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 flex justify-around items-center h-16 px-2 safe-area-pb">
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 flex justify-around items-center h-14 md:h-16 px-2 pb-[env(safe-area-inset-bottom)]">
                 <Link 
                     href={route('dashboard')} 
-                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('dashboard') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                    className={`relative flex flex-col items-center justify-center w-16 h-full space-y-0.5 transition-colors ${route().current('dashboard') ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <span className="material-symbols-outlined text-2xl">{route().current('dashboard') ? 'dynamic_feed' : 'dynamic_feed'}</span>
-                    <span className="text-[10px] font-medium">Timeline</span>
+                    <span className={`material-symbols-outlined text-[22px] ${route().current('dashboard') ? 'font-bold' : ''}`}>{route().current('dashboard') ? 'dynamic_feed' : 'dynamic_feed'}</span>
+                    <span className={`text-[10px] ${route().current('dashboard') ? 'font-bold' : 'font-medium'}`}>Timeline</span>
+                    {route().current('dashboard') && <span className="absolute bottom-1 w-5 h-0.5 rounded-full bg-primary" />}
                 </Link>
                 <Link 
                     href={route('quizzes.index')} 
-                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('quizzes.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                    className={`relative flex flex-col items-center justify-center w-16 h-full space-y-0.5 transition-colors ${route().current('quizzes.*') ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <span className="material-symbols-outlined text-2xl">psychology_alt</span>
-                    <span className="text-[10px] font-medium">Kuis AI</span>
+                    <span className={`material-symbols-outlined text-[22px] ${route().current('quizzes.*') ? 'font-bold' : ''}`}>psychology_alt</span>
+                    <span className={`text-[10px] ${route().current('quizzes.*') ? 'font-bold' : 'font-medium'}`}>Kuis AI</span>
+                    {route().current('quizzes.*') && <span className="absolute bottom-1 w-5 h-0.5 rounded-full bg-primary" />}
                 </Link>
                 <Link 
                     href={route('leaderboard.index')} 
-                    className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${route().current('leaderboard.*') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+                    className={`relative flex flex-col items-center justify-center w-16 h-full space-y-0.5 transition-colors ${route().current('leaderboard.*') ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <span className="material-symbols-outlined text-2xl">social_leaderboard</span>
-                    <span className="text-[10px] font-medium">Ranking</span>
+                    <span className={`material-symbols-outlined text-[22px] ${route().current('leaderboard.*') ? 'font-bold' : ''}`}>social_leaderboard</span>
+                    <span className={`text-[10px] ${route().current('leaderboard.*') ? 'font-bold' : 'font-medium'}`}>Ranking</span>
+                    {route().current('leaderboard.*') && <span className="absolute bottom-1 w-5 h-0.5 rounded-full bg-primary" />}
                 </Link>
                 <button 
                     onClick={() => setSidebarOpen(true)}
-                    className="flex flex-col items-center justify-center w-16 h-full space-y-1 text-gray-500 dark:text-gray-400 active:text-primary"
+                    className="flex flex-col items-center justify-center w-16 h-full space-y-0.5 text-gray-400 dark:text-gray-500 active:text-primary transition-colors"
                 >
-                    <span className="material-symbols-outlined text-2xl">menu</span>
+                    <span className="material-symbols-outlined text-[22px]">menu</span>
                     <span className="text-[10px] font-medium">Menu</span>
                 </button>
             </nav>

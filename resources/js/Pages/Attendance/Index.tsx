@@ -145,28 +145,28 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
         >
             <Head title="Statistik Aktivitas" />
 
-            <div className="w-full space-y-8">
+            <div className="w-full space-y-4 md:space-y-5 overflow-hidden">
                 {/* Pending Recovery Alert */}
                 {pending_recovery && (
-                    <div className="bg-rose-50 border border-rose-200 rounded-3xl p-6 dark:bg-rose-900/20 dark:border-rose-900 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <span className="material-symbols-outlined text-4xl text-rose-500">heart_broken</span>
-                            <div>
-                                <h3 className="text-rose-800 dark:text-rose-200 font-bold text-lg">Ups, Streak Kamu Putus!</h3>
-                                <p className="text-rose-600 dark:text-rose-300 text-sm">
+                    <div className="bg-rose-50 border border-rose-200 rounded-lg md:rounded-xl p-3 md:p-5 dark:bg-rose-900/20 dark:border-rose-900 shadow-sm flex flex-col gap-3">
+                        <div className="flex items-start gap-3 md:gap-4">
+                            <span className="material-symbols-outlined text-3xl md:text-4xl text-rose-500 flex-shrink-0 mt-0.5">heart_broken</span>
+                            <div className="min-w-0">
+                                <h3 className="text-rose-800 dark:text-rose-200 font-bold text-base md:text-lg">Ups, Streak Kamu Putus!</h3>
+                                <p className="text-rose-600 dark:text-rose-300 text-xs md:text-sm mt-1">
                                     Segera pulihkan streak kamu sebelum hangus! Kamu bisa membayar dengan Poin Streak atau kerjakan {pending_recovery.quizzes_required} Kuis.
                                 </p>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2 min-w-[200px]">
+                        <div className="flex flex-row md:flex-col gap-2 md:min-w-[200px]">
                             <button 
                                 onClick={handleRecovery}
                                 disabled={recovering}
-                                className="w-full bg-rose-600 text-white rounded-xl px-4 py-2 font-bold hover:bg-rose-700 transition-colors disabled:opacity-50"
+                                className="flex-1 md:w-full bg-rose-600 text-white rounded-md px-3 py-1.5 text-sm md:text-base font-bold hover:bg-rose-700 transition-colors disabled:opacity-50"
                             >
                                 Pulihkan dengan Poin
                             </button>
-                            <div className="text-center text-xs text-rose-600 font-medium">
+                            <div className="flex items-center justify-center text-xs text-rose-600 font-medium whitespace-nowrap">
                                 Atau {pending_recovery.quizzes_completed}/{pending_recovery.quizzes_required} Kuis Selesai
                             </div>
                         </div>
@@ -174,34 +174,34 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                 )}
 
                 {/* Gamification Streak Fire Dashboard */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-sky-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                <div className="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl p-3 md:p-6 border border-sky-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                    <div className="flex flex-col gap-4 md:gap-5 relative z-10">
                         <div>
-                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <h2 className="text-lg md:text-xl font-black mb-1 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                                 <span className="material-symbols-outlined text-orange-500">local_fire_department</span>
                                 Hari ke-{current_streak}!
                             </h2>
-                            <p className="text-gray-500 text-sm mb-4">
+                            <p className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3">
                                 Terus pertahankan api belajarmu. Dapatkan 1000 XP setiap 5 hari beruntun!
                             </p>
 
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                            <div className="flex flex-wrap gap-1.5 md:gap-2">
+                                <div className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border text-xs md:text-sm font-medium ${
                                     today_streak?.qna_done 
                                         ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800/30 dark:text-emerald-400' 
                                         : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700'
                                 }`}>
-                                    <span className="material-symbols-outlined text-[18px]">
+                                    <span className="material-symbols-outlined text-[14px] md:text-[16px]">
                                         {today_streak?.qna_done ? 'check_circle' : 'radio_button_unchecked'}
                                     </span>
                                     Interaksi Forum
                                 </div>
-                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                                <div className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border text-xs md:text-sm font-medium ${
                                     today_streak?.quiz_done 
                                         ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800/30 dark:text-emerald-400' 
                                         : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700'
                                 }`}>
-                                    <span className="material-symbols-outlined text-[18px]">
+                                    <span className="material-symbols-outlined text-[14px] md:text-[16px]">
                                         {today_streak?.quiz_done ? 'check_circle' : 'radio_button_unchecked'}
                                     </span>
                                     Selesaikan Kuis
@@ -209,93 +209,92 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                             </div>
                         </div>
 
-                        <div className="flex gap-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 p-3 rounded-2xl">
-                            {[1, 2, 3, 4, 5].map((idx) => {
-                                const isCurrentDay = current_streak % 5 === idx - 1;
-                                const isPassed = current_streak % 5 > idx - 1;
-                                
-                                let fireIcon = 'local_fire_department';
-                                let fireColor = 'text-gray-300 dark:text-gray-600'; // Default mati
-                                let fireBg = 'bg-white dark:bg-gray-800';
-                                
-                                if (isPassed) {
-                                    // Sudah full fire sebelumnya
-                                    fireColor = 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]';
-                                    fireBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/30';
-                                } else if (isCurrentDay) {
-                                    // Status hari ini
-                                    if (today_streak?.status === 'full') {
+                        <div className="flex justify-center md:justify-start">
+                            <div className="flex gap-1 md:gap-1.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 p-1.5 md:p-2 rounded-lg">
+                                {[1, 2, 3, 4, 5].map((idx) => {
+                                    const isCurrentDay = current_streak % 5 === idx - 1;
+                                    const isPassed = current_streak % 5 > idx - 1;
+                                    
+                                    let fireIcon = 'local_fire_department';
+                                    let fireColor = 'text-gray-300 dark:text-gray-600';
+                                    let fireBg = 'bg-white dark:bg-gray-800';
+                                    
+                                    if (isPassed) {
                                         fireColor = 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]';
                                         fireBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/30';
-                                    } else if (today_streak?.status === 'half') {
-                                        fireColor = 'text-amber-400 opacity-90 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]';
-                                        fireBg = 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/30';
-                                    } else {
-                                        // Belum ada api hari ini tapi dia sedang aktif di frame ini
-                                        fireBg = 'bg-white border-sky-200 dark:bg-gray-800 dark:border-sky-800/50 shadow-inner';
+                                    } else if (isCurrentDay) {
+                                        if (today_streak?.status === 'full') {
+                                            fireColor = 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]';
+                                            fireBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/30';
+                                        } else if (today_streak?.status === 'half') {
+                                            fireColor = 'text-amber-400 opacity-90 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]';
+                                            fireBg = 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/30';
+                                        } else {
+                                            fireBg = 'bg-white border-sky-200 dark:bg-gray-800 dark:border-sky-800/50 shadow-inner';
+                                        }
                                     }
-                                }
 
-                                return (
-                                    <div key={idx} className="flex flex-col items-center gap-1">
-                                        <div className={`w-12 h-12 flex items-center justify-center rounded-xl border ${fireBg} ${isCurrentDay ? 'ring-2 ring-sky-200 dark:ring-sky-800/50 scale-110' : 'border-gray-100 dark:border-gray-700'}`}>
-                                            <span className={`material-symbols-outlined text-3xl transition-all duration-300 ${fireColor}`}>
-                                                {fireIcon}
-                                            </span>
+                                    return (
+                                        <div key={idx} className="flex flex-col items-center gap-1">
+                                            <div className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-md border ${fireBg} ${isCurrentDay ? 'ring-2 ring-sky-200 dark:ring-sky-800/50 scale-110' : 'border-gray-100 dark:border-gray-700'}`}>
+                                                <span className={`material-symbols-outlined text-xl md:text-2xl transition-all duration-300 ${fireColor}`}>
+                                                    {fireIcon}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Statistics Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-3xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center dark:bg-emerald-900/30 dark:text-emerald-400">
-                                <span className="material-symbols-outlined">trending_up</span>
+                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                    <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                <span className="material-symbols-outlined text-lg md:text-xl">trending_up</span>
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Total Aktivitas</p>
-                                <h3 className="text-2xl font-black">{totalActivity}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[11px] md:text-xs font-medium text-gray-500 truncate">Total Aktivitas</p>
+                                <h3 className="text-base md:text-xl font-black">{totalActivity}</h3>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="bg-white p-6 rounded-3xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center dark:bg-sky-900/30 dark:text-sky-400">
-                                <span className="material-symbols-outlined">calendar_today</span>
+                    <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-md bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0 dark:bg-sky-900/30 dark:text-sky-400">
+                                <span className="material-symbols-outlined text-lg md:text-xl">calendar_today</span>
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Catatan Kehadiran</p>
-                                <h3 className="text-2xl font-black">{attendances.data.length}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[11px] md:text-xs font-medium text-gray-500 truncate">Kehadiran</p>
+                                <h3 className="text-base md:text-xl font-black">{attendances.data.length}</h3>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Mission Mode */}
-                <div className="bg-gradient-to-br from-primary/10 to-sky-100/50 p-8 rounded-3xl border border-sky-100 dark:from-sky-900/20 dark:to-gray-800 dark:border-gray-700 shadow-sm">
-                    <div className="flex items-center gap-2 mb-6">
+                <div className="bg-gradient-to-br from-primary/10 to-sky-100/50 p-3 md:p-5 rounded-lg md:rounded-xl border border-sky-100 dark:from-sky-900/20 dark:to-gray-800 dark:border-gray-700 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <span className="material-symbols-outlined text-primary">rocket_launch</span>
-                        <h2 className="text-xl font-bold">Mode Misi Belajar</h2>
+                        <h2 className="text-lg md:text-xl font-bold">Mode Misi Belajar</h2>
                     </div>
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
                         {missions.map(mission => {
                             const progressPercent = Math.round((mission.progress / mission.requirement) * 100);
                             const isCompleted = !!mission.completed_at;
 
                             return (
-                                <div key={mission.id} className={`p-6 rounded-2xl border transition-all ${
+                                <div key={mission.id} className={`p-3 md:p-4 rounded-md md:rounded-lg border transition-all ${
                                     isCompleted 
                                     ? 'bg-white/60 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/50' 
                                     : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
                                 }`}>
-                                    <div className="flex justify-between items-start mb-4">
+                                    <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <h3 className="font-bold text-gray-900 dark:text-gray-100">{mission.name}</h3>
                                             <p className="text-xs text-gray-500 mt-1">{mission.description}</p>
@@ -312,7 +311,7 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                                                 {mission.progress} / {mission.requirement}
                                             </span>
                                         </div>
-                                        <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                        <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full transition-all duration-1000 ${isCompleted ? 'bg-emerald-500' : 'bg-primary'}`}
                                                 style={{ width: `${progressPercent}%` }}
@@ -330,11 +329,11 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                 </div>
 
                 {/* Activity Heatmap */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div className="bg-white p-3 md:p-5 rounded-lg md:rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+                    <div className="flex flex-col gap-2 mb-4 md:mb-5">
                         <div>
-                            <h2 className="text-xl font-bold">Kalender Aktivitas Belajar</h2>
-                            <p className="text-sm text-gray-500">Visualisasi konsistensi belajar Anda dalam 1 tahun terakhir</p>
+                            <h2 className="text-lg md:text-xl font-bold">Kalender Aktivitas Belajar</h2>
+                            <p className="text-xs md:text-sm text-gray-500">Visualisasi konsistensi belajar Anda dalam 1 tahun terakhir</p>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                             <span>Sedikit</span>
@@ -349,9 +348,9 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto pb-4 custom-scrollbar">
-                        <div className="inline-flex gap-1.5 min-w-max">
-                            <div className="grid grid-rows-7 gap-1.5 mr-2 text-[10px] font-bold text-gray-400 uppercase pt-6">
+                    <div className="overflow-x-auto pb-3 -mx-3 md:-mx-5 px-3 md:px-5 custom-scrollbar">
+                        <div className="inline-flex gap-1 md:gap-1.5 min-w-max">
+                            <div className="grid grid-rows-7 gap-1 md:gap-1.5 mr-1.5 md:mr-2 text-[9px] md:text-[10px] font-bold text-gray-400 uppercase pt-5 md:pt-6">
                                 <div className="h-3 flex items-center">Sen</div>
                                 <div className="h-3" />
                                 <div className="h-3 flex items-center">Rab</div>
@@ -362,17 +361,17 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                             </div>
                             
                             {weeks.map((week, wIndex) => (
-                                <div key={wIndex} className="flex flex-col gap-1.5">
+                                <div key={wIndex} className="flex flex-col gap-1 md:gap-1.5">
                                     {/* Month Label */}
-                                    <div className="h-4 text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                    <div className="h-3 md:h-4 text-[9px] md:text-[10px] font-bold text-gray-400 uppercase mb-1">
                                         {week[0].date.getDate() <= 7 ? week[0].date.toLocaleString('id-ID', { month: 'short' }) : ''}
                                     </div>
-                                    <div className="grid grid-rows-7 gap-1.5">
+                                    <div className="grid grid-rows-7 gap-1 md:gap-1.5">
                                         {week.map((day, dIndex) => (
                                             <div
                                                 key={dIndex}
                                                 title={`${day.dateStr}: ${day.count} aktifitas`}
-                                                className={`w-3.5 h-3.5 rounded-sm transition-colors cursor-help ${getActivityColor(day.count)}`}
+                                                className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-sm transition-colors cursor-help ${getActivityColor(day.count)}`}
                                             />
                                         ))}
                                     </div>
@@ -384,15 +383,15 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
 
                 {/* Detailed Attendance List */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
+                    <div className="flex items-center justify-between px-1">
+                        <h2 className="text-base md:text-lg font-bold flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">history</span>
                             Riwayat Kehadiran
                         </h2>
                     </div>
 
                     {attendances.data.length > 0 ? (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-2 md:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                             {attendances.data.map((attendance) => {
                                 const parsedDate = parseDate(attendance.date);
                                 const subjectColor = attendance.subject?.color_code ?? '#cbd5e1';
@@ -400,20 +399,20 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                                 return (
                                     <div
                                         key={attendance.id}
-                                        className="bg-white rounded-3xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all group relative"
+                                        className="bg-white rounded-lg md:rounded-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 p-3 md:p-4 shadow-sm hover:shadow-md transition-all group relative"
                                     >
-                                        <div className="flex items-start gap-4">
-                                            <div className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase">{weekdayFormatter.format(parsedDate)}</span>
-                                                <span className="text-xl font-black">{parsedDate.getDate()}</span>
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex flex-col items-center justify-center w-11 h-11 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase">{weekdayFormatter.format(parsedDate)}</span>
+                                                <span className="text-base font-black">{parsedDate.getDate()}</span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: subjectColor }} />
                                                     <p className="font-bold truncate">{attendance.subject?.name || 'Mata Pelajaran'}</p>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mb-3">{dateFormatter.format(parsedDate)}</p>
-                                                <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                <p className="text-xs text-gray-500 mb-2">{dateFormatter.format(parsedDate)}</p>
+                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                                                     attendance.status === 'Present' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                                                     attendance.status === 'Absent' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                                     'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -423,11 +422,11 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                                             </div>
                                         </div>
                                         
-                                        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href={route('attendances.edit', attendance.id)} className="p-2 bg-gray-50 dark:bg-gray-900 rounded-xl hover:text-primary">
+                                        <div className="absolute top-2 right-2 md:top-3 md:right-3 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Link href={route('attendances.edit', attendance.id)} className="p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 rounded-md hover:text-primary">
                                                 <span className="material-symbols-outlined text-sm">edit</span>
                                             </Link>
-                                            <button onClick={() => handleDelete(attendance.id)} className="p-2 bg-gray-50 dark:bg-gray-900 rounded-xl hover:text-rose-600">
+                                            <button onClick={() => handleDelete(attendance.id)} className="p-1 md:p-1.5 bg-gray-50 dark:bg-gray-900 rounded-md hover:text-rose-600">
                                                 <span className="material-symbols-outlined text-sm">delete</span>
                                             </button>
                                         </div>
@@ -436,7 +435,7 @@ export default function Index({ auth, attendances, activity_stats, missions, cur
                             })}
                         </div>
                     ) : (
-                        <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-center">
+                        <div className="bg-white p-8 rounded-lg border border-dashed border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-center">
                             <p className="text-gray-500">Belum ada riwayat kehadiran.</p>
                         </div>
                     )}
