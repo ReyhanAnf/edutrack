@@ -24,10 +24,7 @@ class HttpQuizGenerator implements QuizGeneratorInterface
         - 'correct_index': Integer (0-3).
         - 'explanation': Brief explanation of the correct answer.";
 
-        $response = \Laravel\Ai\agent($systemPrompt)
-            ->prompt("Content: $content", $attachments);
-
-        $text = (string) $response;
+        $text = $this->callAi($systemPrompt, $content, $attachments);
         
         // Clean markdown blocks if present
         $jsonContent = preg_replace('/^```json\s*|```$/m', '', $text);
@@ -39,6 +36,22 @@ class HttpQuizGenerator implements QuizGeneratorInterface
         }
 
         return $decoded['questions'] ?? $decoded;
+    }
+
+    /**
+     * Wrap AI call with timeout-aware error handling.
+     */
+    protected function callAi(string $systemPrompt, string $content, array $attachments): string
+    {
+        try {
+            $response = \Laravel\Ai\agent($systemPrompt)
+                ->prompt("Content: $content", $attachments, timeout: 180);
+
+            return (string) $response;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AI Quiz request timed out: ' . $e->getMessage());
+            throw new \Exception("Server AI sedang sibuk. Silakan coba lagi dalam beberapa saat.");
+        }
     }
 
     // Keeping dummy data as a private reference but not using it for production fallback

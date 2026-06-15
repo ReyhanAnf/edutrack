@@ -1,6 +1,5 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
-import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 
 declare let self: ServiceWorkerGlobalScope;
@@ -8,9 +7,12 @@ declare let self: ServiceWorkerGlobalScope;
 self.skipWaiting();
 clientsClaim();
 
+// Precache static assets (CSS, JS, images injected by Vite PWA)
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')));
+
+// Navigation requests go to network (Laravel renders app.blade.php server-side)
+// No SPA fallback needed — this is a server-rendered Inertia.js app.
 
 self.addEventListener('push', (event: PushEvent) => {
     if (!event.data) return;

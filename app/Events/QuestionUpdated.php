@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class QuestionUpdated implements ShouldBroadcastNow
 {
@@ -40,7 +41,7 @@ class QuestionUpdated implements ShouldBroadcastNow
             'question' => [
                 'id' => $this->question->id,
                 'title' => $this->question->title,
-                'body' => $this->question->body,
+                'body' => Str::limit($this->question->body, 500),
                 'status' => $this->question->status,
                 'image_url' => $this->question->image_path ? asset('storage/'.$this->question->image_path) : null,
                 'answers_count' => $this->question->answers_count,

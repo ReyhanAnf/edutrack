@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class AnswerSubmitted implements ShouldBroadcastNow
 {
@@ -43,7 +44,7 @@ class AnswerSubmitted implements ShouldBroadcastNow
             'answer' => [
                 'id' => $this->answer->id,
                 'question_id' => $this->answer->question_id,
-                'body' => $this->answer->body,
+                'body' => Str::limit($this->answer->body, 500),
                 'is_brainliest' => $this->answer->is_brainliest,
                 'is_ai_verified' => $this->answer->is_ai_verified,
                 'created_at' => $this->answer->created_at,

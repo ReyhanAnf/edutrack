@@ -38,7 +38,7 @@ class GenerateStepByStepHintAction
                 \Illuminate\Support\Facades\Config::set('ai.providers.gemini.key', $key);
 
                 $response = \Laravel\Ai\agent($systemPrompt)
-                    ->prompt($userPrompt);
+                    ->prompt($userPrompt, timeout: 180);
 
                 $question->update([
                     'ai_hint' => (string) $response,
@@ -47,6 +47,8 @@ class GenerateStepByStepHintAction
                 Log::info("AI Hint generated for Question #{$question->id} using Key " . ($index + 1));
                 $success = true;
                 break; // Stop trying if successful
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                Log::warning("AI Hint timed out with Key " . ($index + 1) . " for Question #{$question->id}: " . $e->getMessage());
             } catch (\Exception $e) {
                 Log::warning("AI Hint generation failed with Key " . ($index + 1) . " for Question #{$question->id}: " . $e->getMessage());
             }

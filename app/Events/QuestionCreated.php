@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class QuestionCreated implements ShouldBroadcastNow
 {
@@ -37,7 +38,7 @@ class QuestionCreated implements ShouldBroadcastNow
             'question' => [
                 'id' => $this->question->id,
                 'title' => $this->question->title,
-                'body' => $this->question->body,
+                'body' => Str::limit($this->question->body, 500),
                 'status' => $this->question->status,
                 'answers_count' => $this->question->answers_count,
                 'likes_count' => $this->question->likes_count,
