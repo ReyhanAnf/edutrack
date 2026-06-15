@@ -35,6 +35,8 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
     const [isSelectingNotes, setIsSelectingNotes] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [isUsingCustomPrompt, setIsUsingCustomPrompt] = useState<boolean>(false);
+    const [source, setSource] = useState<'notes' | 'ai_knowledge'>('notes');
+    const [questionCount, setQuestionCount] = useState<number>(5);
 
     const availableNotes = notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -44,9 +46,10 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
         setGenerating(true);
         window.axios.post(route('quizzes.generate'), {
             subject_id: selectedSubject,
-            count: 5,
+            count: questionCount,
+            source: source,
             custom_prompt: customPrompt ? customPrompt : null,
-            note_ids: selectedNoteIds.length > 0 ? selectedNoteIds : null,
+            note_ids: (source === 'notes' && selectedNoteIds.length > 0) ? selectedNoteIds : null,
         })
         .then(response => {
             if (response.data.success) {
@@ -73,6 +76,7 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                     <h2 className="text-lg font-bold mb-4">Generate Kuis Baru</h2>
                     <div className="flex flex-col gap-4">
+                        {/* Subject Selector */}
                         <div className="flex flex-col sm:flex-row gap-4">
                             <select 
                                 className="flex-1 rounded-xl border-gray-300 dark:bg-gray-900 dark:border-gray-700"
@@ -86,8 +90,46 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                                 ))}
                             </select>
                         </div>
-                        
-                        {notes.length > 0 ? (
+
+                        {/* Source Selector */}
+                        <div className="flex flex-col gap-2">
+                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Sumber Referensi</span>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => { setSource('notes'); }}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                                        source === 'notes'
+                                            ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500'
+                                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-xl ${source === 'notes' ? 'text-sky-500' : 'text-gray-400'}`}>description</span>
+                                    <div className="flex flex-col">
+                                        <span className={`text-sm font-bold ${source === 'notes' ? 'text-sky-700 dark:text-sky-300' : 'text-gray-700 dark:text-gray-300'}`}>Dari Catatan</span>
+                                        <span className="text-[11px] text-gray-500">Berdasarkan catatan, soal, & nilai Anda</span>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setSource('ai_knowledge'); setIsSelectingNotes(false); setSelectedNoteIds([]); }}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                                        source === 'ai_knowledge'
+                                            ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500'
+                                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-xl ${source === 'ai_knowledge' ? 'text-sky-500' : 'text-gray-400'}`}>psychology</span>
+                                    <div className="flex flex-col">
+                                        <span className={`text-sm font-bold ${source === 'ai_knowledge' ? 'text-sky-700 dark:text-sky-300' : 'text-gray-700 dark:text-gray-300'}`}>Pengetahuan AI</span>
+                                        <span className="text-[11px] text-gray-500">AI membuat soal dari pengetahuan umumnya</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Note Selection - only for "notes" source */}
+                        {source === 'notes' && notes.length > 0 && (
                             <div className="flex flex-col gap-3">
                                 <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <input 
@@ -102,8 +144,8 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                                         }}
                                     />
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Gunakan Catatan Spesifik (Opsional)</span>
-                                        <span className="text-xs text-gray-500">Pilih catatan tertentu secara manual. Jika tidak dicentang, AI akan otomatis mencari catatan yang relevan.</span>
+                                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Pilih Catatan Spesifik (Opsional)</span>
+                                        <span className="text-xs text-gray-500">Jika tidak dicentang, AI otomatis memilih catatan yang relevan.</span>
                                     </div>
                                 </label>
 
@@ -176,10 +218,13 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                                     </div>
                                 )}
                             </div>
-                        ) : (
-                             <p className="text-sm text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800">Anda belum memiliki catatan sama sekali. Kuis akan dibuat berdasarkan pengetahuan umum AI.</p>
+                        )}
+
+                        {source === 'notes' && notes.length === 0 && (
+                            <p className="text-sm text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800">Anda belum memiliki catatan. Beralih ke "Pengetahuan AI" atau buat catatan terlebih dahulu.</p>
                         )}
                         
+                        {/* Custom Prompt */}
                         <div className="flex flex-col gap-3">
                             <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                 <input 
@@ -194,8 +239,8 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                                     }}
                                 />
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Tambahkan Instruksi Khusus (Opsional)</span>
-                                    <span className="text-xs text-gray-500">Berikan perintah spesifik ke AI (misal: "Buat soal HOTS" atau "Fokus ke rumus saja").</span>
+                                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Instruksi Khusus (Opsional)</span>
+                                    <span className="text-xs text-gray-500">Misal: "Buat soal HOTS", "Fokus ke rumus", "Soal pilihan ganda mudah".</span>
                                 </div>
                             </label>
 
@@ -212,16 +257,36 @@ export default function Index({ auth, quizzes, subjects, notes = [] }: Props) {
                             )}
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
-                            <p className="text-sm text-gray-500 text-center sm:text-left flex-1">
-                                AI akan membuat kuis berdasarkan catatan Anda, dan memprioritaskan instruksi tambahan jika ada.
-                            </p>
+                        {/* Question Count + Generate Button */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Jumlah Soal</span>
+                                <div className="flex items-center gap-2">
+                                    {[5, 10, 15].map(count => (
+                                        <button
+                                            key={count}
+                                            type="button"
+                                            onClick={() => setQuestionCount(count)}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                                                questionCount === count
+                                                    ? 'bg-sky-500 text-white shadow-sm'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                            }`}
+                                        >
+                                            {count}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex-1" />
+
                             <button
                                 onClick={generateQuiz}
                                 disabled={generating || !selectedSubject || subjects.data.length === 0}
                                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50"
                             >
-                                <span className="material-symbols-outlined">psychology</span>
+                                <span className="material-symbols-outlined">{generating ? 'hourglass_empty' : 'psychology'}</span>
                                 {generating ? 'Sedang Generate...' : 'Buat Kuis AI'}
                             </button>
                         </div>

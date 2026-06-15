@@ -87,5 +87,9 @@ class DatabaseSeeder extends Seeder
         //     'subject_id' => null,
         //     'category' => 'General',
         // ]);
+
+        $this->call([
+            RoleAndAdminSeeder::class,
+        ]);
     }
 }
