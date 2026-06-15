@@ -5,6 +5,20 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import OnlineIndicator from '@/Components/OnlineIndicator';
 
+function tierColor(tier: string): string {
+    const map: Record<string, string> = {
+        Grandmaster: 'text-purple-500', Master: 'text-blue-500', Expert: 'text-orange-500', Apprentice: 'text-green-500', Novice: 'text-gray-400',
+    };
+    return map[tier] || 'text-gray-400';
+}
+
+function tierIcon(tier: string): string {
+    const map: Record<string, string> = {
+        Grandmaster: 'workspace_premium', Master: 'military_tech', Expert: 'verified', Apprentice: 'school', Novice: 'hotel_class',
+    };
+    return map[tier] || 'hotel_class';
+}
+
 interface User {
     id: number;
     name: string;
@@ -16,6 +30,15 @@ interface User {
     friends_count: number;
     questions_count: number;
     answers_count: number;
+    total_xp: number;
+    highest_tier: string;
+    current_streak: number;
+    top_subjects: Array<{
+        name: string;
+        color_code: string;
+        xp: number;
+        tier: string;
+    }>;
 }
 
 interface Question {
@@ -125,6 +148,56 @@ export default function Show({ auth, user, friendshipStatus, recentQuestions }: 
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Jawaban</p>
                             </div>
                         </div>
+
+                        {/* Gamification Stats */}
+                        <div className="mt-4 grid grid-cols-3 gap-3">
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl p-3 text-center border border-orange-100 dark:border-orange-800/30">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                    <span className={`material-symbols-outlined text-lg ${
+                                        user.current_streak > 0 ? 'text-orange-500' : 'text-gray-400'
+                                    }`} style={{ fontVariationSettings: user.current_streak > 0 ? "'FILL' 1" : undefined }}>local_fire_department</span>
+                                </div>
+                                <p className="text-lg font-black text-gray-900 dark:text-white">{user.current_streak}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Streak</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl p-3 text-center border border-yellow-100 dark:border-yellow-800/30">
+                                <div className="flex items-center justify-center gap-0.5 mb-1">
+                                    <span className="material-symbols-outlined text-lg text-yellow-500">bolt</span>
+                                </div>
+                                <p className="text-lg font-black text-gray-900 dark:text-white">{user.total_xp.toLocaleString()}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Total XP</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-3 text-center border border-indigo-100 dark:border-indigo-800/30">
+                                <div className="flex items-center justify-center gap-0.5 mb-1">
+                                    <span className={`material-symbols-outlined text-lg ${tierColor(user.highest_tier)}`}>{tierIcon(user.highest_tier)}</span>
+                                </div>
+                                <p className="text-lg font-black text-gray-900 dark:text-white text-xs leading-tight">{user.highest_tier}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Tier</p>
+                            </div>
+                        </div>
+
+                        {/* Top Subjects */}
+                        {user.top_subjects.length > 0 && (
+                            <div className="mt-4">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Keahlian Teratas</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {user.top_subjects.map((s) => (
+                                        <span
+                                            key={s.name}
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
+                                            style={{
+                                                backgroundColor: `${s.color_code}15`,
+                                                color: s.color_code,
+                                                borderColor: `${s.color_code}30`,
+                                            }}
+                                        >
+                                            {s.name}
+                                            <span className="text-[10px] opacity-70">{s.tier}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

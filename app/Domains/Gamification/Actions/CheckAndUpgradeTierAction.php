@@ -3,6 +3,7 @@
 namespace App\Domains\Gamification\Actions;
 
 use App\Models\UserSubjectExp;
+use App\Notifications\TierUpgraded;
 
 class CheckAndUpgradeTierAction
 {
@@ -22,6 +23,17 @@ class CheckAndUpgradeTierAction
         if ($newTier !== $currentTier) {
             $userSubject->tier = $newTier;
             $userSubject->save();
+
+            // Notify user about tier upgrade
+            $userSubject->loadMissing(['user', 'globalSubject']);
+            if ($userSubject->user && $userSubject->globalSubject) {
+                $userSubject->user->notify(new TierUpgraded(
+                    subjectName: $userSubject->globalSubject->name,
+                    newTier: $newTier,
+                    xp: $xp,
+                ));
+            }
+
             return true;
         }
 

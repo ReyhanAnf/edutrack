@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePage, router } from '@inertiajs/react';
+import {
+    isPushSupported,
+    getPushSubscriptionStatus,
+    subscribeToPushNotifications,
+    unsubscribeFromPushNotifications,
+} from '@/bootstrap';
 
 interface NotificationData {
     id: string;
@@ -26,6 +32,7 @@ function getIcon(type: string): string {
         streak_warning: 'local_fire_department',
         friend_request: 'person_add',
         friend_accepted: 'handshake',
+        tier_upgraded: 'arrow_upward',
         default: 'notifications',
     });
 }
@@ -40,6 +47,7 @@ function getIconColor(type: string): string {
         streak_warning: 'text-red-500',
         friend_request: 'text-teal-500',
         friend_accepted: 'text-green-500',
+        tier_upgraded: 'text-indigo-500',
         default: 'text-gray-500',
     });
 }
@@ -67,6 +75,25 @@ export default function NotificationBell() {
     const [unreadCount, setUnreadCount] = useState(user?.unread_notifications_count ?? 0);
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [pushStatus, setPushStatus] = useState<'subscribed' | 'not_subscribed' | 'permission_denied' | 'unsupported'>('unsupported');
+    const [pushLoading, setPushLoading] = useState(false);
+
+    // Check push status on mount
+    useEffect(() => {
+        getPushSubscriptionStatus().then(setPushStatus);
+    }, []);
+
+    const handleTogglePush = async () => {
+        setPushLoading(true);
+        if (pushStatus === 'subscribed') {
+            const ok = await unsubscribeFromPushNotifications();
+            setPushStatus(ok ? 'not_subscribed' : 'subscribed');
+        } else {
+            const ok = await subscribeToPushNotifications();
+            setPushStatus(ok ? 'subscribed' : (Notification.permission === 'denied' ? 'permission_denied' : 'not_subscribed'));
+        }
+        setPushLoading(false);
+    };
 
     // Close on outside click
     useEffect(() => {
@@ -92,11 +119,11 @@ export default function NotificationBell() {
         setLoading(false);
     };
 
-    // Poll unread count every 60s
+    // Real-time unread count via Echo WebSocket + fallback polling
     useEffect(() => {
         if (!user) return;
 
-        const poll = async () => {
+        const fetchCount = async () => {
             try {
                 const res = await fetch(route('notifications.unread-count'));
                 const data = await res.json();
@@ -104,8 +131,23 @@ export default function NotificationBell() {
             } catch {}
         };
 
-        const interval = setInterval(poll, 60000);
-        return () => clearInterval(interval);
+        // Listen for real-time broadcast
+        const channelName = `App.Models.User.${user.id}`;
+        if (window.Echo) {
+            window.Echo.private(channelName)
+                .listen('.notification.received', () => {
+                    fetchCount();
+                });
+        }
+
+        // Fallback polling every 60s (in case WebSocket disconnects)
+        const interval = setInterval(fetchCount, 60000);
+        return () => {
+            clearInterval(interval);
+            if (window.Echo) {
+                window.Echo.leave(channelName);
+            }
+        };
     }, [user]);
 
     const toggleOpen = () => {
@@ -166,6 +208,48 @@ export default function NotificationBell() {
                             </button>
                         )}
                     </div>
+
+                    {/* Push Notification Toggle */}
+                    {isPushSupported() && (
+                        <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                            <button
+                                onClick={handleTogglePush}
+                                disabled={pushLoading || pushStatus === 'permission_denied'}
+                                className="w-full flex items-center gap-2.5 text-sm"
+                            >
+                                <span className={`material-symbols-outlined text-lg ${
+                                    pushStatus === 'subscribed' ? 'text-sky-500' : pushStatus === 'permission_denied' ? 'text-gray-400' : 'text-gray-400'
+                                }`}>
+                                    {pushStatus === 'subscribed' ? 'notifications_active' : pushStatus === 'permission_denied' ? 'notifications_off' : 'notifications'}
+                                </span>
+                                <span className="flex-1 text-left">
+                                    {pushStatus === 'subscribed'
+                                        ? 'Notifikasi push aktif'
+                                        : pushStatus === 'permission_denied'
+                                        ? 'Izin notifikasi ditolak'
+                                        : 'Aktifkan notifikasi push'
+                                    }
+                                </span>
+                                {pushStatus !== 'permission_denied' && (
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${
+                                        pushStatus === 'subscribed' ? 'bg-sky-500' : 'bg-gray-300 dark:bg-gray-600'
+                                    }`}>
+                                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                                            pushStatus === 'subscribed' ? 'translate-x-4' : 'translate-x-0.5'
+                                        }`} />
+                                    </div>
+                                )}
+                                {pushLoading && (
+                                    <span className="material-symbols-outlined text-sm animate-spin text-gray-400">progress_activity</span>
+                                )}
+                            </button>
+                            {pushStatus === 'permission_denied' && (
+                                <p className="text-[11px] text-gray-400 mt-1 ml-7">
+                                    Buka pengaturan browser untuk mengizinkan notifikasi
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     {/* List */}
                     <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">

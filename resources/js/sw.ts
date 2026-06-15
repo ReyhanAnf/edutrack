@@ -30,6 +30,8 @@ self.addEventListener('push', (event: PushEvent) => {
         tag: data.tag || 'edutrack',
         data: { url: data.url || '/', extra: data.data || {} },
         vibrate: [100, 50, 100],
+        renotify: true,
+        requireInteraction: true,
     };
 
     event.waitUntil(self.registration.showNotification(title, options));
@@ -37,16 +39,35 @@ self.addEventListener('push', (event: PushEvent) => {
 
 self.addEventListener('notificationclick', (event: NotificationEvent) => {
     event.notification.close();
-    const url = event.notification.data?.url || '/';
+    const targetUrl = event.notification.data?.url || '/';
+
+    // Normalize URL: extract pathname + hash for comparison (PWA clients have origin in url)
+    let targetPath: string;
+    try {
+        const parsed = new URL(targetUrl);
+        targetPath = parsed.pathname + parsed.search + parsed.hash;
+    } catch {
+        targetPath = targetUrl;
+    }
+
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+            // Try to focus an existing window showing the same page
             for (const client of clients) {
-                if (client.url === url && 'focus' in client) {
+                let clientPath: string;
+                try {
+                    const parsed = new URL(client.url);
+                    clientPath = parsed.pathname + parsed.search + parsed.hash;
+                } catch {
+                    clientPath = client.url;
+                }
+                if (clientPath === targetPath && 'focus' in client) {
                     return (client as WindowClient).focus();
                 }
             }
+            // Open new window if no match
             if (self.clients.openWindow) {
-                return self.clients.openWindow(url);
+                return self.clients.openWindow(targetUrl);
             }
         })
     );

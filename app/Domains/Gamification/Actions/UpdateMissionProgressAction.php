@@ -5,10 +5,13 @@ namespace App\Domains\Gamification\Actions;
 use App\Models\User;
 use App\Models\Mission;
 use App\Models\UserMission;
+use App\Models\GlobalSubject;
 use App\Domains\Gamification\Actions\AwardUserExpAction;
 
 class UpdateMissionProgressAction
 {
+    const MISSION_SUBJECT_NAME = 'Misi';
+
     public function __construct(
         protected AwardUserExpAction $awardUserExpAction,
         protected GetUserActivityStatsAction $statsAction
@@ -35,12 +38,12 @@ class UpdateMissionProgressAction
                 if ($userMission->progress >= $mission->requirement) {
                     $userMission->completed_at = now();
                     
-                    // Award points (XP) - we need a global subject or a generic way to award global XP
-                    // For now, let's use globalSubjectId 1 as a placeholder or implement a global award
-                    $globalSubject = \App\Models\GlobalSubject::first();
-                    if ($globalSubject) {
-                        $this->awardUserExpAction->execute($user, $globalSubject->id, $mission->points_reward);
-                    }
+                    // Award XP to a dedicated "Misi" subject
+                    $globalSubject = GlobalSubject::firstOrCreate(
+                        ['name' => self::MISSION_SUBJECT_NAME],
+                        ['description' => 'XP dari penyelesaian misi', 'color_code' => '#f59e0b']
+                    );
+                    $this->awardUserExpAction->execute($user, $globalSubject->id, $mission->points_reward);
                 }
                 
                 $userMission->save();

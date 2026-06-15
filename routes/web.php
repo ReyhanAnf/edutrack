@@ -83,7 +83,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('subjects', SubjectController::class);
+    Route::resource('subjects', SubjectController::class)->only(['index', 'store']);
+        Route::delete('subjects/{globalSubjectId}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
     Route::resource('assignments', AssignmentController::class);
     Route::patch('/assignments/{assignment}/toggle-status', [AssignmentController::class, 'toggleStatus'])
         ->name('assignments.toggle-status');
@@ -152,6 +153,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/missions', [\App\Http\Controllers\Admin\MissionController::class, 'store'])->name('missions.store');
         Route::put('/missions/{mission}', [\App\Http\Controllers\Admin\MissionController::class, 'update'])->name('missions.update');
         Route::delete('/missions/{mission}', [\App\Http\Controllers\Admin\MissionController::class, 'destroy'])->name('missions.destroy');
+
+        Route::get('/subjects', [\App\Http\Controllers\Admin\SubjectController::class, 'index'])->name('subjects.index');
+        Route::post('/subjects', [\App\Http\Controllers\Admin\SubjectController::class, 'store'])->name('subjects.store');
+        Route::put('/subjects/{subject}', [\App\Http\Controllers\Admin\SubjectController::class, 'update'])->name('subjects.update');
+        Route::delete('/subjects/{subject}', [\App\Http\Controllers\Admin\SubjectController::class, 'destroy'])->name('subjects.destroy');
     });
 });
 

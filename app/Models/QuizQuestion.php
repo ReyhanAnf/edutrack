@@ -20,6 +20,7 @@ class QuizQuestion extends Model
 
     protected $casts = [
         'options' => 'array',
+        'correct_answer_index' => 'integer',
     ];
 
     public function quiz(): BelongsTo

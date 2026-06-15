@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleAndAdminSeeder::class,
             MissionSeeder::class,
+            GlobalSubjectSeeder::class,
         ]);
 
         $user = User::create([

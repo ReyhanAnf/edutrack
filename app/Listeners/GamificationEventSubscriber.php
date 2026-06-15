@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Domains\Gamification\Services\UserAchievementService;
+use App\Domains\Gamification\Actions\UpdateMissionProgressAction;
 use App\Events\AnswerSubmitted;
 use App\Events\QuestionCreated;
 use App\Events\QuestionResolved;
@@ -14,7 +15,8 @@ class GamificationEventSubscriber
 {
     public function __construct(
         protected UserAchievementService $achievementService,
-        protected \App\Domains\Gamification\Services\UserStreakService $streakService
+        protected \App\Domains\Gamification\Services\UserStreakService $streakService,
+        protected UpdateMissionProgressAction $updateMissionProgressAction
     ) {}
 
     public function handleQuestionCreated(QuestionCreated $event): void
@@ -29,6 +31,7 @@ class GamificationEventSubscriber
         );
 
         $this->streakService->recordActivity($event->question->user, 'qna');
+        $this->updateMissionProgressAction->execute($event->question->user);
     }
 
     public function handleAnswerSubmitted(AnswerSubmitted $event): void
@@ -40,6 +43,7 @@ class GamificationEventSubscriber
         );
 
         $this->streakService->recordActivity($event->answer->user, 'qna');
+        $this->updateMissionProgressAction->execute($event->answer->user);
     }
 
     public function handleQuestionResolved(QuestionResolved $event): void

@@ -41,7 +41,7 @@ class RoleAndAdminSeeder extends Seeder
             'permissions.edit',
             'permissions.delete',
 
-            // Subjects
+            // Subjects (admin-only CRUD; users just view/pick)
             'subjects.view',
             'subjects.create',
             'subjects.edit',
@@ -134,9 +134,6 @@ class RoleAndAdminSeeder extends Seeder
         $userRole = Role::firstOrCreate(['name' => 'user']);
         $userPermissions = [
             'subjects.view',
-            'subjects.create',
-            'subjects.edit',
-            'subjects.delete',
             'assignments.view',
             'assignments.create',
             'assignments.edit',

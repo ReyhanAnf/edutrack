@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreSubjectRequest;
-use App\Http\Requests\UpdateSubjectRequest;
-use App\Http\Resources\SubjectResource;
+use App\Models\GlobalSubject;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,79 +13,62 @@ use Inertia\Response;
 class SubjectController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display all GlobalSubjects and which ones the user has added.
      */
     public function index(): Response
     {
+        $user = Auth::user();
+        $userSubjectIds = $user->subjects()->pluck('global_subject_id')->filter()->toArray();
+
+        $globalSubjects = GlobalSubject::orderBy('name')->get()->map(function ($gs) use ($userSubjectIds) {
+            return [
+                'id' => $gs->id,
+                'name' => $gs->name,
+                'color_code' => $gs->color_code,
+                'is_added' => in_array($gs->id, $userSubjectIds),
+            ];
+        });
+
         return Inertia::render('Subject/Index', [
-            'subjects' => SubjectResource::collection(Auth::user()->subjects()->latest()->get()),
+            'subjects' => $globalSubjects,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Add a GlobalSubject to the user's subject list.
      */
-    public function create(): Response
+    public function store(Request $request): RedirectResponse
     {
-        return Inertia::render('Subject/Create');
-    }
+        $validated = $request->validate([
+            'global_subject_id' => 'required|exists:global_subjects,id',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreSubjectRequest $request): RedirectResponse
-    {
-        $data = $request->validated();
-        
-        // Find or create a global subject with the same name (case-insensitive)
-        $globalSubject = \App\Models\GlobalSubject::firstOrCreate(
-            ['name' => trim($data['name'])],
-            ['color_code' => $data['color_code'] ?? '#3b82f6']
-        );
+        $user = Auth::user();
+        $globalSubject = GlobalSubject::findOrFail($validated['global_subject_id']);
 
-        Auth::user()->subjects()->create([
-            ...$data,
+        // Check if already added
+        $exists = $user->subjects()->where('global_subject_id', $globalSubject->id)->exists();
+        if ($exists) {
+            return redirect()->route('subjects.index')->with('error', 'Mata pelajaran sudah ditambahkan.');
+        }
+
+        $user->subjects()->create([
+            'name' => $globalSubject->name,
+            'color_code' => $globalSubject->color_code,
             'global_subject_id' => $globalSubject->id,
         ]);
 
-        return redirect()->route('subjects.index');
+        return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
+     * Remove a subject from the user's list by GlobalSubject ID.
      */
-    public function show(Subject $subject)
+    public function destroy(int $globalSubjectId): RedirectResponse
     {
-        abort(404);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Subject $subject): Response
-    {
-        return Inertia::render('Subject/Edit', [
-            'subject' => new SubjectResource($subject),
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateSubjectRequest $request, Subject $subject): RedirectResponse
-    {
-        $subject->update($request->validated());
-
-        return redirect()->route('subjects.index');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Subject $subject): RedirectResponse
-    {
+        $subject = Auth::user()->subjects()->where('global_subject_id', $globalSubjectId)->firstOrFail();
         $subject->delete();
 
-        return redirect()->route('subjects.index');
+        return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil dihapus dari daftar Anda.');
     }
 }

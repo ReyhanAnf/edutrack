@@ -34,7 +34,7 @@ class WebPushChannel
             ],
         ];
 
-        $webPush = new WebPush($auth);
+        $webPush = new WebPush($auth, ['TTL' => 3600]); // 1 hour TTL — stale notifications won't be delivered
 
         $subscriptions = PushSubscription::where('user_id', $notifiable->id)->get();
 
@@ -66,6 +66,11 @@ class WebPushChannel
 
             if ($report->isSubscriptionExpired()) {
                 $invalidEndpoints[] = $sub->endpoint;
+            } elseif (!$report->isSuccessful()) {
+                Log::warning('Web push delivery failed', [
+                    'endpoint' => $sub->endpoint,
+                    'reason' => $report->getReason(),
+                ]);
             }
         }
 

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\NotificationReceived;
 use App\Listeners\GamificationEventSubscriber;
 use App\Listeners\NotificationEventSubscriber;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
@@ -31,6 +33,13 @@ class AppServiceProvider extends ServiceProvider
         
         Event::subscribe(GamificationEventSubscriber::class);
         Event::subscribe(NotificationEventSubscriber::class);
+
+        // Broadcast real-time notification event for instant badge updates
+        Event::listen(NotificationSent::class, function (NotificationSent $event) {
+            if (method_exists($event->notifiable, 'getKey')) {
+                event(new NotificationReceived($event->notifiable->getKey()));
+            }
+        });
 
         // Super admin bypasses all permission checks
         Gate::before(function ($user, $ability) {
