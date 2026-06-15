@@ -1,1 +1,0 @@
-import{j as i}from"./app-jfcHEwQ_.js";import{u as r}from"./AuthenticatedLayout-BxaF7gx_.js";function a({userId:n,className:e=""}){return r(s=>s.isOnline(n))?i.jsx("span",{className:`flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] ${e}`,title:"Sedang Aktif"}):null}export{a as O};
