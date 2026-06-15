@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useEffect, useState } from 'react';
 import { useOnlineUsersStore } from '@/lib/online-users-store';
+import NotificationBell from '@/Components/NotificationBell';
 
 export default function Authenticated({
     header,
@@ -86,6 +87,7 @@ export default function Authenticated({
                     { label: 'Dasbor Admin', href: route('admin.dashboard'), icon: 'monitoring', active: route().current('admin.dashboard') },
                     { label: 'Kelola Pengguna', href: route('admin.users.index'), icon: 'manage_accounts', active: route().current('admin.users.*') },
                     { label: 'Kelola Peran', href: route('admin.roles.index'), icon: 'admin_panel_settings', active: route().current('admin.roles.*') },
+                    { label: 'Kelola Misi', href: route('admin.missions.index'), icon: 'rocket_launch', active: route().current('admin.missions.*') },
                 ]
             });
         }
@@ -231,7 +233,8 @@ export default function Authenticated({
                             </form>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        {user && <NotificationBell />}
                         {user ? (
                             <Link href={route('profile.edit')} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
                                 <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">Selamat datang, <strong>{user.name}</strong></span>

@@ -59,7 +59,7 @@ class GradeController extends Controller
      */
     public function edit(Grade $grade): Response
     {
-        if ($grade->user_id !== Auth::id()) {
+        if ((int) $grade->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -74,7 +74,7 @@ class GradeController extends Controller
      */
     public function update(UpdateGradeRequest $request, Grade $grade): RedirectResponse
     {
-        if ($grade->user_id !== Auth::id()) {
+        if ((int) $grade->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -88,7 +88,7 @@ class GradeController extends Controller
      */
     public function destroy(Grade $grade): RedirectResponse
     {
-        if ($grade->user_id !== Auth::id()) {
+        if ((int) $grade->user_id !== (int) Auth::id()) {
             abort(403);
         }
 

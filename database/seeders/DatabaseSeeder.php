@@ -23,12 +23,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seed roles & permissions first
+        $this->call([
+            RoleAndAdminSeeder::class,
+            MissionSeeder::class,
+        ]);
+
         $user = User::create([
             'name' => 'Reyhan Andrea Firdaus',
             'email' => '19240133@bsi.ac.id',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
+        $user->assignRole('user');
 
         $user2 = User::create([
             'name' => 'Ramadhani Ilham Bintang',
@@ -36,6 +43,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
+        $user2->assignRole('user');
 
         $user3 = User::create([
             'name' => 'Nabilah Sri Mulyani',
@@ -43,6 +51,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
+        $user3->assignRole('user');
 
         $user4 = User::create([
             'name' => 'AlGhifari',
@@ -50,6 +59,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
+        $user4->assignRole('user');
 
         // $subjects = Subject::factory(6)->create([
         //     'user_id' => $user->id,
@@ -87,9 +97,5 @@ class DatabaseSeeder extends Seeder
         //     'subject_id' => null,
         //     'category' => 'General',
         // ]);
-
-        $this->call([
-            RoleAndAdminSeeder::class,
-        ]);
     }
 }

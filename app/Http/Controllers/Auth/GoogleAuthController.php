@@ -78,6 +78,8 @@ class GoogleAuthController extends Controller
                 'avatar' => $googleUser->getAvatar(),
                 'password' => Hash::make(Str::random(32)),
             ]);
+
+            $user->assignRole('user');
         }
 
         Auth::login($user, remember: true);

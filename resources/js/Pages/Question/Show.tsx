@@ -77,6 +77,7 @@ export default function Show({ auth, question }: Props) {
     const [brainliestAnswerId, setBrainliestAnswerId] = useState<number | null>(item.brainliest_answer_id ?? null);
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [markingBrainliest, setMarkingBrainliest] = useState(false);
 
     const REACTIONS = [
         { type: 'icon', value: 'lightbulb', label: 'Genius' },
@@ -104,7 +105,11 @@ export default function Show({ auth, question }: Props) {
 
     const markBrainliest = (answerId: number) => {
         if (!auth.user) return setIsAuthModalOpen(true);
-        router.patch(route('questions.answers.brainliest', [item.id, answerId]));
+        if (markingBrainliest) return;
+        setMarkingBrainliest(true);
+        router.patch(route('questions.answers.brainliest', [item.id, answerId]), {}, {
+            onFinish: () => setMarkingBrainliest(false),
+        });
     };
 
     const toggleQuestionLike = () => {
@@ -502,10 +507,11 @@ export default function Show({ auth, question }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => markBrainliest(answer.id)}
-                                        className="inline-flex shrink-0 w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-green-200 hover:bg-green-50 hover:text-green-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-green-900 dark:hover:bg-green-900/20 dark:hover:text-green-400 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                        disabled={markingBrainliest}
+                                        className="inline-flex shrink-0 w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-green-200 hover:bg-green-50 hover:text-green-700 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-700 dark:text-gray-300 dark:hover:border-green-900 dark:hover:bg-green-900/20 dark:hover:text-green-400 focus:outline-none focus:ring-2 focus:ring-green-500/20"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">task_alt</span>
-                                        Jadikan Terbaik
+                                        <span className="material-symbols-outlined text-[16px]">{markingBrainliest ? 'progress_activity' : 'task_alt'}</span>
+                                        {markingBrainliest ? 'Memproses...' : 'Jadikan Terbaik'}
                                     </button>
                                 )}
                             </div>

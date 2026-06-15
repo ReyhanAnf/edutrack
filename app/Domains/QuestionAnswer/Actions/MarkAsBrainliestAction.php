@@ -11,6 +11,11 @@ class MarkAsBrainliestAction
 {
     public function execute(Question $question, Answer $answer): Question
     {
+        // Already brainliest — skip to prevent duplicate notifications
+        if ((int) $question->brainliest_answer_id === (int) $answer->id) {
+            return $question;
+        }
+
         $question = DB::transaction(function () use ($question, $answer) {
             $question->answers()->update(['is_brainliest' => false]);
 

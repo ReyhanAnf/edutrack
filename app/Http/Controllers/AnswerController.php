@@ -26,8 +26,8 @@ class AnswerController extends Controller
         Answer $answer,
         QuestionWorkflowService $workflow
     ): RedirectResponse {
-        abort_unless($question->user_id === Auth::id(), 403);
-        abort_unless($answer->question_id === $question->id, 404);
+        abort_unless((int) $question->user_id === (int) Auth::id(), 403);
+        abort_unless((int) $answer->question_id === (int) $question->id, 404);
 
         $workflow->markAsBrainliest($question, $answer);
 

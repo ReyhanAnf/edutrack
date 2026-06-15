@@ -90,7 +90,7 @@ class QuizController extends Controller
     {
         $quiz = Quiz::with(['questions', 'user', 'subject'])->findOrFail($id);
 
-        if (!$quiz->is_public && $quiz->user_id !== Auth::id()) {
+        if (!$quiz->is_public && (int) $quiz->user_id !== (int) Auth::id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized access to this quiz.',

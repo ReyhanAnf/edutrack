@@ -10,7 +10,7 @@ class UpdateQuestionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->question->user_id === Auth::id();
+        return (int) $this->question->user_id === (int) Auth::id();
     }
 
     /**

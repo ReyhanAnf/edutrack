@@ -131,6 +131,11 @@ class User extends Authenticatable
         return $this->hasMany(UserMission::class);
     }
 
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
     public function friendships(): HasMany
     {
         return $this->hasMany(Friendship::class);

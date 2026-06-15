@@ -14,6 +14,9 @@ export default defineConfig({
             registerType: 'autoUpdate',
             outDir: 'public',
             buildBase: '/',
+            strategies: 'injectManifest',
+            srcDir: 'resources/js',
+            filename: 'sw.ts',
             manifest: {
                 name: 'EduTrack - AI Learning Network',
                 short_name: 'EduTrack',
@@ -24,7 +27,7 @@ export default defineConfig({
                 start_url: '/',
                 icons: [
                     {
-                        src: '/logo.png', // Temporary, user can update this later
+                        src: '/logo.png',
                         sizes: '192x192',
                         type: 'image/png'
                     },

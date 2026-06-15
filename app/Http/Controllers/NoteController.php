@@ -80,7 +80,7 @@ class NoteController extends Controller
      */
     public function edit(Note $note): Response
     {
-        if ($note->user_id !== Auth::id()) {
+        if ((int) $note->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -95,7 +95,7 @@ class NoteController extends Controller
      */
     public function update(UpdateNoteRequest $request, Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
+        if ((int) $note->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -140,7 +140,7 @@ class NoteController extends Controller
      */
     public function destroy(Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
+        if ((int) $note->user_id !== (int) Auth::id()) {
             abort(403);
         }
 

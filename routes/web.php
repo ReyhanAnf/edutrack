@@ -110,6 +110,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/friends/{user}/accept', [FriendshipController::class, 'accept'])->name('friends.accept');
     Route::delete('/friends/{user}', [FriendshipController::class, 'destroy'])->name('friends.destroy');
 
+    // Notifications
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/subscribe', [\App\Http\Controllers\NotificationController::class, 'subscribe'])->name('notifications.subscribe');
+    Route::post('/notifications/unsubscribe', [\App\Http\Controllers\NotificationController::class, 'unsubscribe'])->name('notifications.unsubscribe');
+
     // Quizzes
     Route::get('/quizzes/my-scores', [QuizController::class, 'myScores'])->name('quizzes.my-scores');
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
@@ -139,6 +147,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'store'])->name('permissions.store');
         Route::put('/permissions/{permission}', [\App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('permissions.update');
         Route::delete('/permissions/{permission}', [\App\Http\Controllers\Admin\PermissionController::class, 'destroy'])->name('permissions.destroy');
+
+        Route::get('/missions', [\App\Http\Controllers\Admin\MissionController::class, 'index'])->name('missions.index');
+        Route::post('/missions', [\App\Http\Controllers\Admin\MissionController::class, 'store'])->name('missions.store');
+        Route::put('/missions/{mission}', [\App\Http\Controllers\Admin\MissionController::class, 'update'])->name('missions.update');
+        Route::delete('/missions/{mission}', [\App\Http\Controllers\Admin\MissionController::class, 'destroy'])->name('missions.destroy');
     });
 });
 

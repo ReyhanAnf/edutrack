@@ -35,3 +35,54 @@ if (isProduction || usePusherAtLocal) {
         enabledTransports: ['ws', 'wss'],
     }) as any;
 }
+
+// Web Push subscription
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+export async function subscribeToPushNotifications(): Promise<void> {
+    if (!VAPID_PUBLIC_KEY) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        if (!registration.pushManager) return;
+
+        const existing = await registration.pushManager.getSubscription();
+        if (existing) return;
+
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+        });
+
+        const json = subscription.toJSON();
+        await axios.post('/notifications/subscribe', {
+            endpoint: json.endpoint,
+            keys: {
+                public_key: json.keys?.p256dh || '',
+                auth_token: json.keys?.auth || '',
+            },
+            content_encoding: 'aes128gcm',
+        });
+    } catch (err) {
+        console.warn('Push subscription failed:', err);
+    }
+}
+
+// Auto-subscribe when service worker is ready
+if ('serviceWorker' in navigator && VAPID_PUBLIC_KEY) {
+    navigator.serviceWorker.ready.then(() => {
+        subscribeToPushNotifications();
+    });
+}

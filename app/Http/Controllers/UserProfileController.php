@@ -40,7 +40,7 @@ class UserProfileController extends Controller
                 if ($friendship->status === 'accepted') {
                     $friendshipStatus = 'accepted';
                 } else {
-                    $friendshipStatus = $friendship->user_id === $currentUser->id ? 'pending_sent' : 'pending_received';
+                    $friendshipStatus = (int) $friendship->user_id === (int) $currentUser->id ? 'pending_sent' : 'pending_received';
                 }
             }
         }

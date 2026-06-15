@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Quiz;
 use App\Http\Resources\SubjectResource;
+use App\Notifications\QuizAttempted;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,7 +40,7 @@ class QuizController extends Controller
     {
         $quiz->load(['questions', 'user', 'subject']);
 
-        if (!$quiz->is_public && $quiz->user_id !== Auth::id()) {
+        if (!$quiz->is_public && (int) $quiz->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -68,6 +69,17 @@ class QuizController extends Controller
                         'total_questions' => $request->input('total_questions'),
                     ]
                 );
+
+                // Notify quiz owner if someone else attempted their quiz
+                if ((int) $quiz->user_id !== (int) $user->id && $quiz->user) {
+                    $quiz->user->notify(new QuizAttempted(
+                        quiz: $quiz,
+                        attempterName: $user->name,
+                        attempterId: $user->id,
+                        score: (int) $request->input('score'),
+                        totalQuestions: (int) $request->input('total_questions'),
+                    ));
+                }
             }
         }
 
@@ -76,7 +88,7 @@ class QuizController extends Controller
 
     public function attempts(Quiz $quiz): Response
     {
-        if ($quiz->user_id !== Auth::id()) {
+        if ((int) $quiz->user_id !== (int) Auth::id()) {
             abort(403, 'Hanya pembuat kuis yang dapat melihat daftar peserta.');
         }
 

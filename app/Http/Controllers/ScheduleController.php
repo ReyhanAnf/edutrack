@@ -59,7 +59,7 @@ class ScheduleController extends Controller
      */
     public function edit(Schedule $schedule): Response
     {
-        if ($schedule->user_id !== Auth::id()) {
+        if ((int) $schedule->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -74,7 +74,7 @@ class ScheduleController extends Controller
      */
     public function update(UpdateScheduleRequest $request, Schedule $schedule): RedirectResponse
     {
-        if ($schedule->user_id !== Auth::id()) {
+        if ((int) $schedule->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
@@ -88,7 +88,7 @@ class ScheduleController extends Controller
      */
     public function destroy(Schedule $schedule): RedirectResponse
     {
-        if ($schedule->user_id !== Auth::id()) {
+        if ((int) $schedule->user_id !== (int) Auth::id()) {
             abort(403);
         }
 

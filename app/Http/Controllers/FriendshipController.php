@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Friendship;
 use App\Models\User;
+use App\Notifications\FriendRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,6 +61,12 @@ class FriendshipController extends Controller
             'status' => 'pending',
         ]);
 
+        $user->notify(new FriendRequest(
+            actorName: Auth::user()->name,
+            actorId: Auth::id(),
+            action: 'sent',
+        ));
+
         return back()->with('success', 'Permintaan pertemanan dikirim.');
     }
 
@@ -71,6 +78,12 @@ class FriendshipController extends Controller
             ->firstOrFail();
 
         $friendship->update(['status' => 'accepted']);
+
+        $user->notify(new FriendRequest(
+            actorName: Auth::user()->name,
+            actorId: Auth::id(),
+            action: 'accepted',
+        ));
 
         return back()->with('success', 'Permintaan pertemanan diterima.');
     }
